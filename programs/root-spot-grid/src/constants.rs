@@ -1,0 +1,1 @@
+pub const MARKET_SEED: &str = "market";
