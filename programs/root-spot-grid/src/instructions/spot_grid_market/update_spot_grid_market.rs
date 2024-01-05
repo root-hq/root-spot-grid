@@ -6,12 +6,12 @@ use crate::constants::MARKET_SEED;
 
 pub fn update_spot_grid_market(
     ctx: Context<UpdateSpotGridMarket>,
-    new_min_price_difference_bps: u16,
-    new_min_price_difference_pct_hundredths: u16
+    new_min_order_spacing_bps: Option<u16>,
+    new_protocol_fee_per_fill_bps: Option<u16>
 ) -> Result<()> {
 
-    ctx.accounts.market.min_price_difference_bps = new_min_price_difference_bps;
-    ctx.accounts.market.min_price_difference_pct_hundredths = new_min_price_difference_pct_hundredths;
+    ctx.accounts.market.min_order_spacing_bps = new_min_order_spacing_bps.unwrap_or(ctx.accounts.market.min_order_spacing_bps);
+    ctx.accounts.market.protocol_fee_per_fill_bps = new_protocol_fee_per_fill_bps.unwrap_or(ctx.accounts.market.protocol_fee_per_fill_bps);
 
     Ok(())
 }

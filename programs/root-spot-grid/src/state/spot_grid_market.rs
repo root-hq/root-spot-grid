@@ -11,8 +11,8 @@ pub struct SpotGridMarket {
     pub base_token_mint: Pubkey,
     pub quote_token_mint: Pubkey,
 
-    pub min_price_difference_bps: u16,
-    pub min_price_difference_pct_hundredths: u16,
+    pub min_order_spacing_bps: u16,
+    pub protocol_fee_per_fill_bps: u16,
 
     pub claimed_protocol_fee_in_quote_tokens: u64,
     pub unclaimed_protocol_fee_in_quote_tokens: u64,

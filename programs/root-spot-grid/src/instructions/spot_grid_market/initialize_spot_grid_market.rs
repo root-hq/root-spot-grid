@@ -6,8 +6,8 @@ use crate::constants::MARKET_SEED;
 
 pub fn initialize_spot_grid_market(
     ctx: Context<InitializeSpotGridMarket>,
-    min_price_difference_bps: u16,
-    min_price_difference_pct_hundredths: u16
+    min_order_spacing_bps: u16,
+    protocol_fee_per_fill_bps: u16
 ) -> Result<()> {
 
     **ctx.accounts.market = SpotGridMarket {
@@ -17,8 +17,8 @@ pub fn initialize_spot_grid_market(
         protocol_fee_recipient: ctx.accounts.protocol_fee_recipient.key(),
         base_token_mint: ctx.accounts.base_token_mint.key(),
         quote_token_mint: ctx.accounts.quote_token_mint.key(),
-        min_price_difference_bps,
-        min_price_difference_pct_hundredths,
+        min_order_spacing_bps,
+        protocol_fee_per_fill_bps,
         claimed_protocol_fee_in_quote_tokens: 0,
         unclaimed_protocol_fee_in_quote_tokens: 0
     };

@@ -14,18 +14,18 @@ pub mod root_spot_grid {
 
     pub fn initialize_spot_grid_market(
         ctx: Context<InitializeSpotGridMarket>,
-        min_price_difference_bps: u16,
-        min_price_difference_pct_hundredths: u16
+        min_order_spacing_bps: u16,
+        protocol_fee_per_fill_bps: u16
     ) -> Result<()> {
-        instructions::initialize_spot_grid_market(ctx, min_price_difference_bps, min_price_difference_pct_hundredths)
+        instructions::initialize_spot_grid_market(ctx, min_order_spacing_bps, protocol_fee_per_fill_bps)
     }
 
     pub fn update_spot_grid_market(
         ctx: Context<UpdateSpotGridMarket>,
-        new_min_price_difference_bps: u16,
-        new_min_price_difference_pct_hundredths: u16
+        new_min_order_spacing_bps: Option<u16>,
+        new_protocol_fee_per_fill_bps: Option<u16>
     ) -> Result<()> {
-        instructions::update_spot_grid_market(ctx, new_min_price_difference_bps, new_min_price_difference_pct_hundredths)
+        instructions::update_spot_grid_market(ctx, new_min_order_spacing_bps, new_protocol_fee_per_fill_bps)
     }
 
 }
