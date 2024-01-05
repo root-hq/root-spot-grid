@@ -7,9 +7,12 @@ pub mod constants;
 declare_id!("13uxuLoQHvpp1K1571WcgoTYEV4Ys5ni7LqjBZiTmNNx");
 
 use instructions::*;
+use state::*;
 
 #[program]
 pub mod root_spot_grid {
+    use crate::state::PositionArgs;
+
     use super::*;
 
     pub fn initialize_market(
@@ -28,6 +31,13 @@ pub mod root_spot_grid {
         new_min_order_size_in_base_lots: Option<u64>,
     ) -> Result<()> {
         instructions::update_market(ctx, new_min_order_spacing_bps, new_protocol_fee_per_fill_bps, new_min_order_size_in_base_lots)
+    }
+
+    pub fn create_position(
+        ctx: Context<CreatePosition>,
+        args: PositionArgs
+    ) -> Result<()> {
+        instructions::create_position(ctx, args)
     }
 
 }

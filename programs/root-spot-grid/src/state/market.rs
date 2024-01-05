@@ -20,5 +20,5 @@ pub struct Market {
 }
 
 impl Market {
-    pub const LEN: usize = 8 + (1 * 8) + (5 * 32) + (2 * 2) + (3 * 8);
+    pub const LEN: usize = 8 + (1 * 1) + (5 * 32) + (2 * 2) + (3 * 8);
 }
