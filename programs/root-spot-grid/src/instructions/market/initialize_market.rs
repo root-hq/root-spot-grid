@@ -7,7 +7,8 @@ use crate::constants::MARKET_SEED;
 pub fn initialize_market(
     ctx: Context<InitializeMarket>,
     min_order_spacing_bps: u16,
-    protocol_fee_per_fill_bps: u16
+    protocol_fee_per_fill_bps: u16,
+    min_order_size_in_base_lots: u64
 ) -> Result<()> {
 
     **ctx.accounts.market = Market {
@@ -18,6 +19,7 @@ pub fn initialize_market(
         base_token_mint: ctx.accounts.base_token_mint.key(),
         quote_token_mint: ctx.accounts.quote_token_mint.key(),
         min_order_spacing_bps,
+        min_order_size_in_base_lots,
         protocol_fee_per_fill_bps,
         claimed_protocol_fee_in_quote_tokens: 0,
         unclaimed_protocol_fee_in_quote_tokens: 0

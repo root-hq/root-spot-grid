@@ -14,10 +14,11 @@ pub struct Market {
     pub min_order_spacing_bps: u16,
     pub protocol_fee_per_fill_bps: u16,
 
+    pub min_order_size_in_base_lots: u64,
     pub claimed_protocol_fee_in_quote_tokens: u64,
     pub unclaimed_protocol_fee_in_quote_tokens: u64,
 }
 
 impl Market {
-    pub const LEN: usize = 8 + (1 * 8) + (5 * 32) + (2 * 2) + (2 * 8);
+    pub const LEN: usize = 8 + (1 * 8) + (5 * 32) + (2 * 2) + (3 * 8);
 }
