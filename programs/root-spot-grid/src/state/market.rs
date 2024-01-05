@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[derive(Debug, Default)]
 #[account]
-pub struct SpotGridMarket {
+pub struct Market {
     pub bump: u8,
     pub phoenix_market: Pubkey,
     pub owner: Pubkey,
@@ -18,6 +18,6 @@ pub struct SpotGridMarket {
     pub unclaimed_protocol_fee_in_quote_tokens: u64,
 }
 
-impl SpotGridMarket {
+impl Market {
     pub const LEN: usize = 8 + (1 * 8) + (5 * 32) + (2 * 2) + (2 * 8);
 }

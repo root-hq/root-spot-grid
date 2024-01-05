@@ -1,11 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 
-use crate::state::SpotGridMarket;
+use crate::state::Market;
 use crate::constants::MARKET_SEED;
 
-pub fn update_spot_grid_market(
-    ctx: Context<UpdateSpotGridMarket>,
+pub fn update_market(
+    ctx: Context<UpdateMarket>,
     new_min_order_spacing_bps: Option<u16>,
     new_protocol_fee_per_fill_bps: Option<u16>
 ) -> Result<()> {
@@ -17,7 +17,7 @@ pub fn update_spot_grid_market(
 }
 
 #[derive(Accounts)]
-pub struct UpdateSpotGridMarket<'info> {
+pub struct UpdateMarket<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
 
@@ -36,7 +36,7 @@ pub struct UpdateSpotGridMarket<'info> {
         bump = market.bump,
         has_one = owner
     )]
-    pub market: Box<Account<'info, SpotGridMarket>>,
+    pub market: Box<Account<'info, Market>>,
 
     pub base_token_mint: Account<'info, Mint>,
 

@@ -1,16 +1,16 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 
-use crate::state::SpotGridMarket;
+use crate::state::Market;
 use crate::constants::MARKET_SEED;
 
-pub fn initialize_spot_grid_market(
-    ctx: Context<InitializeSpotGridMarket>,
+pub fn initialize_market(
+    ctx: Context<InitializeMarket>,
     min_order_spacing_bps: u16,
     protocol_fee_per_fill_bps: u16
 ) -> Result<()> {
 
-    **ctx.accounts.market = SpotGridMarket {
+    **ctx.accounts.market = Market {
         bump: *ctx.bumps.get("market").unwrap(),
         phoenix_market: ctx.accounts.phoenix_market.key(),
         owner: ctx.accounts.owner.key(),
@@ -27,7 +27,7 @@ pub fn initialize_spot_grid_market(
 }
 
 #[derive(Accounts)]
-pub struct InitializeSpotGridMarket<'info> {
+pub struct InitializeMarket<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
 
@@ -44,10 +44,10 @@ pub struct InitializeSpotGridMarket<'info> {
             phoenix_market.key().as_ref()
         ],
         bump,
-        space = SpotGridMarket::LEN,
+        space = Market::LEN,
         payer = owner
     )]
-    pub market: Box<Account<'info, SpotGridMarket>>,
+    pub market: Box<Account<'info, Market>>,
 
     pub base_token_mint: Account<'info, Mint>,
 
