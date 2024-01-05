@@ -10,16 +10,8 @@ pub fn update_spot_grid_market(
     new_min_price_difference_pct_hundredths: u16
 ) -> Result<()> {
 
-    **ctx.accounts.market = SpotGridMarket {
-        bump: *ctx.bumps.get("market").unwrap(),
-        phoenix_market: ctx.accounts.phoenix_market.key(),
-        owner: ctx.accounts.owner.key(),
-        protocol_fee_recipient: ctx.accounts.protocol_fee_recipient.key(),
-        base_token_mint: ctx.accounts.base_token_mint.key(),
-        quote_token_mint: ctx.accounts.quote_token_mint.key(),
-        min_price_difference_bps: new_min_price_difference_bps,
-        min_price_difference_pct_hundredths: new_min_price_difference_pct_hundredths
-    };
+    ctx.accounts.market.min_price_difference_bps = new_min_price_difference_bps;
+    ctx.accounts.market.min_price_difference_pct_hundredths = new_min_price_difference_pct_hundredths;
 
     Ok(())
 }

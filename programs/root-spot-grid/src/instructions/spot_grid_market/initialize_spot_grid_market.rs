@@ -18,7 +18,9 @@ pub fn initialize_spot_grid_market(
         base_token_mint: ctx.accounts.base_token_mint.key(),
         quote_token_mint: ctx.accounts.quote_token_mint.key(),
         min_price_difference_bps,
-        min_price_difference_pct_hundredths
+        min_price_difference_pct_hundredths,
+        claimed_protocol_fee_in_quote_tokens: 0,
+        unclaimed_protocol_fee_in_quote_tokens: 0
     };
 
     Ok(())
