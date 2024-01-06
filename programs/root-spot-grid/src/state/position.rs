@@ -40,6 +40,7 @@ pub struct PositionArgs {
     pub num_grids: u16,
     pub min_price_in_ticks: u64,
     pub max_price_in_ticks: u64,
+    pub order_size_in_base_lots: u64
 }
 
 

@@ -4,6 +4,8 @@ use anchor_lang::error_code;
 pub enum SpotGridError {
     #[msg("Invalid price range")]
     InvalidPriceRange,
-    #[msg("Too many grids")]
-    TooManyGrids,
+    #[msg("Exceeded number of grids limit")]
+    ExceededMaxNumGrids,
+    #[msg("Order size less than minimum size required")]
+    InvalidOrderSize,
 }

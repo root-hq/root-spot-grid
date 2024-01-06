@@ -13,7 +13,11 @@ pub fn create_position(
 
     require!(args.max_price_in_ticks - args.min_price_in_ticks >= ctx.accounts.spot_grid_market.min_order_spacing_in_ticks, SpotGridError::InvalidPriceRange);
 
-    require!(args.num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::TooManyGrids);
+    require!(args.num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::ExceededMaxNumGrids);
+
+    require!(args.order_size_in_base_lots >= ctx.accounts.spot_grid_market.min_order_size_in_base_lots, SpotGridError::InvalidOrderSize);
+
+    // TODO - Add a check that the current price is not equal to min/max price of the grid
 
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
