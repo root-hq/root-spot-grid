@@ -1,12 +1,25 @@
 use anchor_lang::prelude::*;
 use crate::constants::MAX_GRIDS_PER_POSITION;
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy, Default)]
+#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy)]
 pub struct OrderParams {
     pub order_sequence_number: u64,
     pub price_in_ticks: u64,
     pub size_in_base_lots: u64,
     pub is_bid: bool,
+    pub is_null: bool,
+}
+
+impl Default for OrderParams {
+    fn default() -> Self {
+        OrderParams {
+            order_sequence_number: 0u64,
+            price_in_ticks: 0u64,
+            size_in_base_lots: 0u64,
+            is_bid: true,
+            is_null: true
+        }
+    }
 }
 
 #[derive(Debug, AnchorDeserialize, AnchorSerialize, Clone, Copy)]
