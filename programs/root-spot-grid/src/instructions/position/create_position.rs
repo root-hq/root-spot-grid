@@ -2,11 +2,18 @@ use anchor_lang::prelude::*;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
 use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION};
+use crate::errors::SpotGridError;
 
 pub fn create_position(
     ctx: Context<CreatePosition>,
     args: PositionArgs
 ) -> Result<()> {
+    
+    require!(args.min_price_in_ticks < args.max_price_in_ticks, SpotGridError::InvalidPriceRange);
+
+    require!(args.max_price_in_ticks - args.min_price_in_ticks >= ctx.accounts.spot_grid_market.min_order_spacing_in_ticks, SpotGridError::InvalidPriceRange);
+
+    require!(args.num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::TooManyGrids);
 
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
