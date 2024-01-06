@@ -13,6 +13,7 @@ pub fn create_position(
 
     let mut num_grids = args.num_grids;
     let mut spacing_per_order_in_ticks = args.max_price_in_ticks.checked_sub(args.min_price_in_ticks).unwrap().checked_div(num_grids).unwrap();
+    let order_size_in_base_lots = args.order_size_in_base_lots.max(ctx.accounts.spot_grid_market.min_order_size_in_base_lots);
 
     if spacing_per_order_in_ticks < ctx.accounts.spot_grid_market.min_order_spacing_in_ticks {
         spacing_per_order_in_ticks = ctx.accounts.spot_grid_market.min_order_spacing_in_ticks;
@@ -21,9 +22,18 @@ pub fn create_position(
 
     require!(num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::ExceededMaxNumGrids);
 
-    require!(args.order_size_in_base_lots >= ctx.accounts.spot_grid_market.min_order_size_in_base_lots, SpotGridError::InvalidOrderSize);
+    let mut order_tuples: Vec<(u64, u64)> = vec![];
+    let mut left_price_tracker = args.min_price_in_ticks;
+    let mut right_price_tracker = args.min_price_in_ticks + spacing_per_order_in_ticks;
 
-    // TODO - Add a check that the current price is not equal to min/max price of the grid
+    while right_price_tracker <= args.max_price_in_ticks {
+        order_tuples.push((left_price_tracker, right_price_tracker));
+        left_price_tracker += spacing_per_order_in_ticks;
+        right_price_tracker += spacing_per_order_in_ticks;
+    }
+
+    let final_min_price_in_ticks = order_tuples[0].0;
+    let final_max_price_in_ticks = order_tuples.get(order_tuples.len() - 1).unwrap().1;
 
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
@@ -31,7 +41,13 @@ pub fn create_position(
         market: ctx.accounts.spot_grid_market.key(),
         owner: ctx.accounts.creator.key(),
         trade_manager: ctx.accounts.trade_manager.key(),
-        position_args: args,
+        position_args: PositionArgs {
+            mode: args.mode,
+            num_grids,
+            min_price_in_ticks: final_min_price_in_ticks,
+            max_price_in_ticks: final_max_price_in_ticks,
+            order_size_in_base_lots,
+        },
         fee_growth_base: 0,
         fee_growth_quote: 0,
         active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
