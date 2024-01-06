@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
-use anchor_spl::token::Token;
+use anchor_spl::token::{Token, Mint, TokenAccount, Transfer};
 use phoenix::program::MarketHeader;
 use phoenix::program::new_order::CondensedOrder;
 use phoenix::quantities::WrapperU64;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
-use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION, TRADE_MANAGER_SEED, SEAT_INITIALIZATION_LAMPORTS};
+use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::utils::{load_header, get_best_bid_and_ask};
 
@@ -121,6 +121,29 @@ pub fn create_position(
     }
     
     // TODO - STEP 4 - Transfer the calculated amount to the trade_manager
+    anchor_spl::token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.base_token_user_ac.to_account_info(),
+                to: ctx.accounts.base_token_vault_ac.to_account_info(),
+                authority: ctx.accounts.creator.to_account_info(),
+            },
+        ),
+        base_token_amount,
+    )?;
+
+    anchor_spl::token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.quote_token_user_ac.to_account_info(),
+                to: ctx.accounts.quote_token_vault_ac.to_account_info(),
+                authority: ctx.accounts.creator.to_account_info(),
+            },
+        ),
+        quote_token_amount,
+    )?;
 
     // STEP 5 - Transfer some SOL to trade_manager for seat initialization later
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
@@ -168,7 +191,9 @@ pub struct CreatePosition<'info> {
     pub phoenix_market: UncheckedAccount<'info>,
 
     #[account(
-        has_one = phoenix_market
+        has_one = phoenix_market,
+        has_one = base_token_mint,
+        has_one = quote_token_mint
     )]
     pub spot_grid_market: Box<Account<'info, Market>>,
 
@@ -186,6 +211,10 @@ pub struct CreatePosition<'info> {
     /// CHECK: No constraint needed
     pub trade_manager: UncheckedAccount<'info>,
 
+    pub base_token_mint: Account<'info, Mint>,
+
+    pub quote_token_mint: Account<'info, Mint>,
+
     #[account(
         init,
         seeds = [
@@ -197,6 +226,32 @@ pub struct CreatePosition<'info> {
         payer = creator
     )]
     pub position: Box<Account<'info, Position>>,
+
+    #[account(mut)]
+    pub base_token_user_ac: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub quote_token_user_ac: Account<'info, TokenAccount>,
+
+    #[account(
+        init,
+        payer = creator,
+        seeds = [BASE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
+        bump,
+        token::mint = base_token_mint,
+        token::authority = trade_manager
+    )]
+    pub base_token_vault_ac: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        init_if_needed,
+        payer = creator,
+        seeds = [QUOTE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
+        bump,
+        token::mint = quote_token_mint,
+        token::authority = trade_manager
+    )]
+    pub quote_token_vault_ac: Box<Account<'info, TokenAccount>>,
 
     pub system_program: Program<'info, System>,
 
