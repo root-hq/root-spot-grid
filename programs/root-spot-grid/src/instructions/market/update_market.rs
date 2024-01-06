@@ -6,12 +6,12 @@ use crate::constants::MARKET_SEED;
 
 pub fn update_market(
     ctx: Context<UpdateMarket>,
-    new_min_order_spacing_bps: Option<u16>,
     new_protocol_fee_per_fill_bps: Option<u16>,
+    new_min_order_spacing_in_ticks: Option<u64>,
     new_min_order_size_in_base_lots: Option<u64>
 ) -> Result<()> {
 
-    ctx.accounts.market.min_order_spacing_bps = new_min_order_spacing_bps.unwrap_or(ctx.accounts.market.min_order_spacing_bps);
+    ctx.accounts.market.min_order_spacing_in_ticks = new_min_order_spacing_in_ticks.unwrap_or(ctx.accounts.market.min_order_spacing_in_ticks);
     ctx.accounts.market.min_order_size_in_base_lots = new_min_order_size_in_base_lots.unwrap_or(ctx.accounts.market.min_order_size_in_base_lots);
     ctx.accounts.market.protocol_fee_per_fill_bps = new_protocol_fee_per_fill_bps.unwrap_or(ctx.accounts.market.protocol_fee_per_fill_bps);
 
