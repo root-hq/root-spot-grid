@@ -1,16 +1,22 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
 use anchor_spl::token::Token;
+use phoenix::program::MarketHeader;
+use phoenix::program::new_order::CondensedOrder;
+use phoenix::quantities::WrapperU64;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
 use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION, TRADE_MANAGER_SEED, SEAT_INITIALIZATION_LAMPORTS};
 use crate::errors::SpotGridError;
+use crate::utils::{load_header, get_best_bid_and_ask};
 
 pub fn create_position(
     ctx: Context<CreatePosition>,
     args: PositionArgs
 ) -> Result<()> {
     
+    // STEP 1 - Perform validation checks on the args passed and modify them if necessary
+
     require!(args.min_price_in_ticks < args.max_price_in_ticks, SpotGridError::InvalidPriceRange);
 
     let mut num_grids = args.num_grids;
@@ -37,6 +43,100 @@ pub fn create_position(
     let final_min_price_in_ticks = order_tuples[0].0;
     let final_max_price_in_ticks = order_tuples.get(order_tuples.len() - 1).unwrap().1;
 
+    // STEP 2 - Deserialize the current market state and generate bid/ask orders
+
+    let mut bids: Vec<CondensedOrder> = vec![];
+    let mut asks: Vec<CondensedOrder> = vec![];
+
+    let market_header = load_header(&ctx.accounts.phoenix_market)?;
+    let market_data = ctx.accounts.phoenix_market.data.borrow();
+    let (_, market_bytes) = market_data.split_at(std::mem::size_of::<MarketHeader>());
+    let market_state = phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
+        .map_err(|_| {
+            msg!("Failed to deserialize market");
+            SpotGridError::PhoenixMarketError
+        })?
+        .inner;
+
+    let best_bid_ask_prices = get_best_bid_and_ask(market_state);
+    let current_market_price = best_bid_ask_prices.0.checked_add(best_bid_ask_prices.1).unwrap().checked_div(2).unwrap();
+
+    for tuple in order_tuples {
+        // If current_market_price is below the range, place an ask order
+        // If current_market_price is above the range, place a bid order
+        // If current_market_price is between the range, prefer a bid order over an ask order
+        if current_market_price < tuple.0 && current_market_price < tuple.1 {
+            asks.push(CondensedOrder {
+                price_in_ticks: tuple.1,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None
+            });
+        }
+        else if current_market_price > tuple.0 && current_market_price > tuple.1 {
+            bids.push(CondensedOrder {
+                price_in_ticks: tuple.0,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None
+            });
+        }
+        else if current_market_price > tuple.0 && current_market_price < tuple.1 {
+            // TODO - Consult @jarxiao if the current_market_price is between the bid-ask range, what should be preferred
+            // Placing a bid for now
+            bids.push(CondensedOrder {
+                price_in_ticks: tuple.0,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None
+            });
+        }
+    }
+
+    // STEP 3 - Calculate and transfer the amount required by the trade_manager to be able to place
+    //          orders successfully in the future
+
+    let mut base_token_amount = 0u64;
+    let mut quote_token_amount = 0u64;
+
+    let tick_size_in_quote_atoms_per_base_unit = market_header.get_tick_size_in_quote_atoms_per_base_unit().as_u64();
+
+    let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
+    let base_atoms_per_raw_base_unit = 10u64.pow(market_header.base_params.decimals);
+    let raw_base_units_per_base_unit = market_header.raw_base_units_per_base_unit.max(1);
+    require!((base_atoms_per_raw_base_unit * raw_base_units_per_base_unit as u64)
+        % base_atoms_per_base_lot
+        != 0, SpotGridError::InvalidBaseLotSize);
+    let num_base_lots_per_base_unit = (base_atoms_per_raw_base_unit
+        * raw_base_units_per_base_unit as u64)
+        / base_atoms_per_base_lot;
+    
+    for bid in bids {
+        let quote_atoms_needed = bid.price_in_ticks.checked_mul(tick_size_in_quote_atoms_per_base_unit).unwrap().checked_mul(bid.size_in_base_lots).unwrap().checked_div(num_base_lots_per_base_unit).unwrap();
+        quote_token_amount += quote_atoms_needed;
+    }
+
+    for ask in asks {
+        base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
+    }
+    
+    // TODO - STEP 4 - Transfer the calculated amount to the trade_manager
+
+    // STEP 5 - Transfer some SOL to trade_manager for seat initialization later
+    let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
+        &ctx.accounts.creator.key(),
+        &ctx.accounts.trade_manager.key(),
+        SEAT_INITIALIZATION_LAMPORTS,
+    );
+    invoke(
+        &transfer_ix,
+        &[
+            ctx.accounts.creator.to_account_info(),
+            ctx.accounts.trade_manager.to_account_info(),
+        ],
+    )?;
+
+    // STEP 6 - Assign the position state to the PDA
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
         position_key: ctx.accounts.position_key.key(),
@@ -55,19 +155,6 @@ pub fn create_position(
         active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
     };
 
-    // Transfer some SOL to trade_manager for seat initialization later
-    let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
-        &ctx.accounts.creator.key(),
-        &ctx.accounts.trade_manager.key(),
-        SEAT_INITIALIZATION_LAMPORTS,
-    );
-    invoke(
-        &transfer_ix,
-        &[
-            ctx.accounts.creator.to_account_info(),
-            ctx.accounts.trade_manager.to_account_info(),
-        ],
-    )?;
 
     Ok(())
 }

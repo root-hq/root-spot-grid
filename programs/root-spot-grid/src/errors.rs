@@ -8,7 +8,13 @@ pub enum SpotGridError {
     ExceededMaxNumGrids,
     #[msg("Order size less than minimum size required")]
     InvalidOrderSize,
+    #[msg("Phoenix program id invalid")]
+    InvalidPhoenixProgram,
+    #[msg("Phoenix market deserialization error")]
+    PhoenixMarketError,
     #[msg("Phoenix vault seat Retired")]
     PhoenixVaultSeatRetired,
+    #[msg("Invalid base lot size")]
+    InvalidBaseLotSize,
 
 }
