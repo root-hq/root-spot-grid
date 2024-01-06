@@ -1,7 +1,9 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program::invoke;
+use anchor_spl::token::Token;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
-use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION, TRADE_MANAGER_SEED};
+use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION, TRADE_MANAGER_SEED, SEAT_INITIALIZATION_LAMPORTS};
 use crate::errors::SpotGridError;
 
 pub fn create_position(
@@ -53,6 +55,20 @@ pub fn create_position(
         active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
     };
 
+    // Transfer some SOL to trade_manager for seat initialization later
+    let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
+        &ctx.accounts.creator.key(),
+        &ctx.accounts.trade_manager.key(),
+        SEAT_INITIALIZATION_LAMPORTS,
+    );
+    invoke(
+        &transfer_ix,
+        &[
+            ctx.accounts.creator.to_account_info(),
+            ctx.accounts.trade_manager.to_account_info(),
+        ],
+    )?;
+
     Ok(())
 }
 
@@ -96,4 +112,7 @@ pub struct CreatePosition<'info> {
     pub position: Box<Account<'info, Position>>,
 
     pub system_program: Program<'info, System>,
+
+    #[account(address = anchor_spl::token::ID)]
+    pub token_program: Program<'info, Token>,
 }

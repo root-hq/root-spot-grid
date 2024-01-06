@@ -8,4 +8,7 @@ pub enum SpotGridError {
     ExceededMaxNumGrids,
     #[msg("Order size less than minimum size required")]
     InvalidOrderSize,
+    #[msg("Phoenix vault seat Retired")]
+    PhoenixVaultSeatRetired,
+
 }
