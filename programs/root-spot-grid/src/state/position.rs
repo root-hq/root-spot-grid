@@ -50,6 +50,7 @@ pub struct Position {
     pub position_key: Pubkey,
     pub market: Pubkey,
     pub owner: Pubkey,
+    pub trade_manager: Pubkey,
 
     pub position_args: PositionArgs,
     
@@ -60,5 +61,5 @@ pub struct Position {
 }
 
 impl Position {
-    pub const LEN: usize = 8 + (1 * 2) + (3 * 32) + (2 * 2) + (4 * 8) + (15 * 17);
+    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + (2 * 2) + (4 * 8) + (15 * 17);
 }

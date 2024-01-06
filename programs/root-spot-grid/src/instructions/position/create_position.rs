@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
-use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION};
+use crate::constants::{POSITION_SEED, MAX_GRIDS_PER_POSITION, TRADE_MANAGER_SEED};
 use crate::errors::SpotGridError;
 
 pub fn create_position(
@@ -20,6 +20,7 @@ pub fn create_position(
         position_key: ctx.accounts.position_key.key(),
         market: ctx.accounts.spot_grid_market.key(),
         owner: ctx.accounts.creator.key(),
+        trade_manager: ctx.accounts.trade_manager.key(),
         position_args: args,
         fee_growth_base: 0,
         fee_growth_quote: 0,
@@ -44,6 +45,17 @@ pub struct CreatePosition<'info> {
 
     /// CHECK: No constraint needed
     pub position_key: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            TRADE_MANAGER_SEED.as_bytes(),
+            position.key().as_ref(),
+        ],
+        bump,
+    )]
+    /// CHECK: No constraint needed
+    pub trade_manager: UncheckedAccount<'info>,
 
     #[account(
         init,
