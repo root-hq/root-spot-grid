@@ -11,9 +11,15 @@ pub fn create_position(
     
     require!(args.min_price_in_ticks < args.max_price_in_ticks, SpotGridError::InvalidPriceRange);
 
-    require!(args.max_price_in_ticks - args.min_price_in_ticks >= ctx.accounts.spot_grid_market.min_order_spacing_in_ticks, SpotGridError::InvalidPriceRange);
+    let mut num_grids = args.num_grids;
+    let mut spacing_per_order_in_ticks = args.max_price_in_ticks.checked_sub(args.min_price_in_ticks).unwrap().checked_div(num_grids).unwrap();
 
-    require!(args.num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::ExceededMaxNumGrids);
+    if spacing_per_order_in_ticks < ctx.accounts.spot_grid_market.min_order_spacing_in_ticks {
+        spacing_per_order_in_ticks = ctx.accounts.spot_grid_market.min_order_spacing_in_ticks;
+        num_grids = args.max_price_in_ticks.checked_sub(args.min_price_in_ticks).unwrap().checked_div(spacing_per_order_in_ticks).unwrap();
+    }
+
+    require!(num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::ExceededMaxNumGrids);
 
     require!(args.order_size_in_base_lots >= ctx.accounts.spot_grid_market.min_order_size_in_base_lots, SpotGridError::InvalidOrderSize);
 

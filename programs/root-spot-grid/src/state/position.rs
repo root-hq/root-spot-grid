@@ -37,7 +37,7 @@ impl Default for Mode {
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy, Default)]
 pub struct PositionArgs {
     pub mode: Mode,
-    pub num_grids: u16,
+    pub num_grids: u64,
     pub min_price_in_ticks: u64,
     pub max_price_in_ticks: u64,
     pub order_size_in_base_lots: u64
