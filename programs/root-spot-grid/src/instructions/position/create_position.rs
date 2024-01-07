@@ -82,7 +82,6 @@ pub fn create_position(
             });
         }
         else if current_market_price > tuple.0 && current_market_price < tuple.1 {
-            // TODO - Consult @jarxiao if the current_market_price is between the bid-ask range, what should be preferred
             // Placing a bid for now
             bids.push(CondensedOrder {
                 price_in_ticks: tuple.0,
@@ -120,7 +119,7 @@ pub fn create_position(
         base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
     }
     
-    // TODO - STEP 4 - Transfer the calculated amount to the trade_manager
+    // STEP 4 - Transfer the calculated amount to the trade_manager
     anchor_spl::token::transfer(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -211,9 +210,9 @@ pub struct CreatePosition<'info> {
     /// CHECK: No constraint needed
     pub trade_manager: UncheckedAccount<'info>,
 
-    pub base_token_mint: Account<'info, Mint>,
+    pub base_token_mint: Box<Account<'info, Mint>>,
 
-    pub quote_token_mint: Account<'info, Mint>,
+    pub quote_token_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,
@@ -228,10 +227,10 @@ pub struct CreatePosition<'info> {
     pub position: Box<Account<'info, Position>>,
 
     #[account(mut)]
-    pub base_token_user_ac: Account<'info, TokenAccount>,
+    pub base_token_user_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub quote_token_user_ac: Account<'info, TokenAccount>,
+    pub quote_token_user_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,

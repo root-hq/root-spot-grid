@@ -1,11 +1,18 @@
 {
-            "compilerOptions": {
-              "types": ["mocha", "chai"],
-              "typeRoots": ["./node_modules/@types"],
-              "lib": ["es2015"],
-              "module": "commonjs",
-              "target": "es6",
-              "esModuleInterop": true
-            }
-          }
-          
+  "compilerOptions": {
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "target": "es6",
+    "declaration": true,
+    "outDir": "./dist",
+    "lib": ["es2015", "DOM"],
+    "types": ["mocha", "chai"],
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["sdk/**/*"],
+  "typedocOptions": {
+    "entryPoints": ["sdk/src"],
+    "out": "docs"
+  }
+}
