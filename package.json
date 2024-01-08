@@ -5,7 +5,8 @@
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.26.0",
-        "@ellipsis-labs/phoenix-sdk": "^2.0.2"
+        "@ellipsis-labs/phoenix-sdk": "^2.0.2",
+        "dotenv": "^16.3.1"
     },
     "devDependencies": {
         "@solana/spl-token": "0.3.8",
