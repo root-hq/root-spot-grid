@@ -1,8 +1,12 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke;
+use anchor_lang::{
+    __private::bytemuck::{self},
+    solana_program::program::{invoke, invoke_signed},
+};
 use anchor_spl::token::{Token, Mint, TokenAccount, Transfer};
-use phoenix::program::MarketHeader;
-use phoenix::program::new_order::CondensedOrder;
+use phoenix::program::{MarketHeader, Seat};
+use phoenix::program::new_order::{CondensedOrder, MultipleOrderPacket, FailedMultipleLimitOrderBehavior};
+use phoenix::program::status::SeatApprovalStatus;
 use phoenix::quantities::WrapperU64;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
@@ -110,12 +114,12 @@ pub fn create_position(
         * raw_base_units_per_base_unit as u64)
         / base_atoms_per_base_lot;
     
-    for bid in bids {
+    for bid in &bids {
         let quote_atoms_needed = bid.price_in_ticks.checked_mul(tick_size_in_quote_atoms_per_base_unit).unwrap().checked_mul(bid.size_in_base_lots).unwrap().checked_div(num_base_lots_per_base_unit).unwrap();
         quote_token_amount += quote_atoms_needed;
     }
 
-    for ask in asks {
+    for ask in &asks {
         base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
     }
     
@@ -177,6 +181,101 @@ pub fn create_position(
         active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
     };
 
+    // STEP 7 - Prepare signer seeds for the next CPI calls
+    let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
+
+    let spot_grid_market = ctx.accounts.spot_grid_market.key();
+
+    let trade_manager_seeds = &[
+        TRADE_MANAGER_SEED.as_bytes(),
+        spot_grid_market.as_ref(),
+        &[trade_manager_bump],
+    ];
+    let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
+
+    // STEP 8 - Acquire a seat if necessary
+    let seat_account = ctx.accounts.seat.data.borrow();
+    msg!("seat_account length: {}", seat_account.len());
+
+    let mut seat_approval_status = SeatApprovalStatus::NotApproved;
+
+    if seat_account.len() > 0 {
+        msg!("Seat account is not initialized");
+        let seat_struct = bytemuck::from_bytes::<Seat>(seat_account.as_ref());
+
+        require!(
+            SeatApprovalStatus::from(seat_struct.approval_status)
+                != SeatApprovalStatus::Retired,
+            SpotGridError::PhoenixVaultSeatRetired
+        );
+
+        seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
+    }
+
+    msg!("seat_approval_status set to: {}", seat_approval_status);
+
+    if seat_approval_status == SeatApprovalStatus::NotApproved {
+        msg!("Not approved so claiming a seat");
+
+        drop(seat_account);
+
+        invoke_signed(
+            &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
+                &ctx.accounts.trade_manager.key(),
+                &ctx.accounts.phoenix_market.key(),
+            ),
+            &[
+                ctx.accounts.phoenix_program.to_account_info(),
+                ctx.accounts.log_authority.to_account_info(),
+                ctx.accounts.phoenix_market.to_account_info(),
+                ctx.accounts.seat_manager.to_account_info(),
+                ctx.accounts.seat_deposit_collector.to_account_info(),
+                ctx.accounts.trade_manager.to_account_info(),
+                ctx.accounts.seat.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            trade_manager_signer_seeds,
+        )?;
+    }
+
+    // STEP 9 - Place post only orders
+    let client_order_id = u128::from_le_bytes(
+        ctx.accounts.trade_manager.key().to_bytes()[..16]
+            .try_into()
+            .unwrap(),
+    );
+
+    let mut multiple_order_packet =
+    MultipleOrderPacket::new(bids, asks, Some(client_order_id), false);
+
+    multiple_order_packet.failed_multiple_limit_order_behavior =
+        FailedMultipleLimitOrderBehavior::SkipOnInsufficientFundsAndAmendOnCross;
+
+    invoke_signed(
+        &phoenix::program::create_new_multiple_order_instruction_with_custom_token_accounts(
+            &ctx.accounts.phoenix_market.key(),
+            &ctx.accounts.trade_manager.key(),
+            &ctx.accounts.base_token_vault_ac.key(),
+            &ctx.accounts.quote_token_vault_ac.key(),
+            &ctx.accounts.base_token_mint.key(),
+            &ctx.accounts.quote_token_mint.key(),
+            &multiple_order_packet,
+        ),
+        &[
+            ctx.accounts.phoenix_program.to_account_info(),
+            ctx.accounts.log_authority.to_account_info(),
+            ctx.accounts.phoenix_market.to_account_info(),
+            ctx.accounts.trade_manager.to_account_info(),
+            ctx.accounts.seat.to_account_info(),
+            ctx.accounts.base_token_vault_ac.to_account_info(),
+            ctx.accounts.quote_token_vault_ac.to_account_info(),
+            ctx.accounts.base_token_vault_ac.to_account_info(),
+            ctx.accounts.quote_token_vault_ac.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+        ],
+        trade_manager_signer_seeds,
+    )?;
+
 
     Ok(())
 }
@@ -209,6 +308,21 @@ pub struct CreatePosition<'info> {
     )]
     /// CHECK: No constraint needed
     pub trade_manager: UncheckedAccount<'info>,
+
+    /// CHECK: Checked in CPI
+    pub log_authority: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Checked in CPI
+    pub seat: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Checked in CPI
+    pub seat_manager: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Checked in CPI
+    pub seat_deposit_collector: UncheckedAccount<'info>,
 
     pub base_token_mint: Box<Account<'info, Mint>>,
 
@@ -251,6 +365,12 @@ pub struct CreatePosition<'info> {
         token::authority = trade_manager
     )]
     pub quote_token_vault_ac: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: Checked in CPI
+    pub phoenix_program: UncheckedAccount<'info>,
+
+    /// CHECK: Checked in CPI
+    pub phoenix_seat_manager_program: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 
