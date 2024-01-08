@@ -372,6 +372,14 @@ pub struct CreatePosition<'info> {
     )]
     pub quote_token_vault_ac: Box<Account<'info, TokenAccount>>,
 
+    #[account(mut)]
+    /// CHECK: Checked in CPI
+    pub base_phoenix_vault: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Checked in CPI
+    pub quote_phoenix_vault: UncheckedAccount<'info>,
+
     /// CHECK: Checked in CPI
     pub phoenix_program: UncheckedAccount<'info>,
 

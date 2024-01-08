@@ -65,28 +65,8 @@ export type RootSpotGrid = {
           "isSigner": true
         },
         {
-          "name": "phoenixMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "protocolFeeRecipient",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "market",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "baseTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
           "isSigner": false
         }
       ],
@@ -140,6 +120,26 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "logAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "seat",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatDepositCollector",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "baseTokenMint",
           "isMut": false,
           "isSigner": false
@@ -172,6 +172,26 @@ export type RootSpotGrid = {
         {
           "name": "quoteTokenVaultAc",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quotePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixSeatManagerProgram",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -498,28 +518,8 @@ export const IDL: RootSpotGrid = {
           "isSigner": true
         },
         {
-          "name": "phoenixMarket",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "protocolFeeRecipient",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "market",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "baseTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
           "isSigner": false
         }
       ],
@@ -573,6 +573,26 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "logAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "seat",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatDepositCollector",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "baseTokenMint",
           "isMut": false,
           "isSigner": false
@@ -605,6 +625,26 @@ export const IDL: RootSpotGrid = {
         {
           "name": "quoteTokenVaultAc",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quotePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixSeatManagerProgram",
+          "isMut": false,
           "isSigner": false
         },
         {

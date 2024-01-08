@@ -1,6 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getPositionAddress, getQuoteTokenVaultAddress, getRootProgram, getSpotGridMarketAddress, getTradeManagerAddress } from "../../utils";
 import { Market, PositionArgs } from "../../types";
+import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
+import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
 
 export interface CreatePositionArgs extends WriteActionArgs {
     spotGridMarketAddress: anchor.web3.PublicKey;
@@ -36,6 +38,24 @@ export const createPosition = async({
     const baseTokenVaultAc = getBaseTokenVaultAddress(spotGridMarketAddress);
     const quoteTokenVaultAc = getQuoteTokenVaultAddress(spotGridMarketAddress);
 
+    const phoenixClient = await Phoenix.Client.createWithMarketAddresses(
+        provider.connection,
+        [phoenixMarket]
+      );
+    
+    await phoenixClient.addMarket(phoenixMarket.toBase58());
+    const phoenixMarketState = phoenixClient.marketStates.get(phoenixMarket.toBase58());
+
+    const logAuthority = Phoenix.getLogAuthority();
+    const seat = phoenixMarketState.getSeatAddress(tradeManager);
+    const basePhoenixVault = phoenixMarketState.data.header.baseParams.vaultKey;
+    const quotePhoenixVault = phoenixMarketState.data.header.quoteParams.vaultKey;
+
+    const seatManager = Phoenix.getSeatManagerAddress(phoenixMarket);
+    const seatDepositCollector =
+        Phoenix.getSeatDepositCollectorAddress(phoenixMarket);
+
+    
     const transaction = new anchor.web3.Transaction();
 
     try {
@@ -47,14 +67,22 @@ export const createPosition = async({
                 phoenixMarket,
                 spotGridMarket: spotGridMarketAddress,
                 positionKey: positionKey.publicKey,
-                position: positionAddress,
                 tradeManager,
+                logAuthority,
+                seat,
+                seatManager,
+                seatDepositCollector,
                 baseTokenMint,
                 quoteTokenMint,
+                position: positionAddress,
                 baseTokenUserAc,
                 quoteTokenUserAc,
                 baseTokenVaultAc,
-                quoteTokenVaultAc
+                quoteTokenVaultAc,
+                basePhoenixVault,
+                quotePhoenixVault,
+                phoenixProgram: Phoenix.PROGRAM_ADDRESS,
+                phoenixSeatManagerProgram: PHOENIX_SEAT_MANAGER_PROGRAM_ID
             })
             .instruction();
 
