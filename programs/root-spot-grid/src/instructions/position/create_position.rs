@@ -124,6 +124,7 @@ pub fn create_position(
     }
     
     // STEP 4 - Transfer the calculated amount to the trade_manager
+
     anchor_spl::token::transfer(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -149,6 +150,7 @@ pub fn create_position(
     )?;
 
     // STEP 5 - Transfer some SOL to trade_manager for seat initialization later
+
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
         &ctx.accounts.creator.key(),
         &ctx.accounts.trade_manager.key(),
@@ -163,6 +165,7 @@ pub fn create_position(
     )?;
 
     // STEP 6 - Assign the position state to the PDA
+
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
         position_key: ctx.accounts.position_key.key(),
@@ -182,6 +185,7 @@ pub fn create_position(
     };
 
     // STEP 7 - Prepare signer seeds for the next CPI calls
+
     let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
 
     let spot_grid_market = ctx.accounts.spot_grid_market.key();
@@ -194,6 +198,7 @@ pub fn create_position(
     let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
 
     // STEP 8 - Acquire a seat if necessary
+
     let seat_account = ctx.accounts.seat.data.borrow();
     msg!("seat_account length: {}", seat_account.len());
 
@@ -239,6 +244,7 @@ pub fn create_position(
     }
 
     // STEP 9 - Place post only orders
+    
     let client_order_id = u128::from_le_bytes(
         ctx.accounts.trade_manager.key().to_bytes()[..16]
             .try_into()
