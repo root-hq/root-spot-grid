@@ -1,8 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
 
 use crate::state::Market;
-use crate::constants::MARKET_SEED;
 
 pub fn update_market(
     ctx: Context<UpdateMarket>,
@@ -23,24 +21,9 @@ pub struct UpdateMarket<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
 
-    /// CHECK: No constraint needed
-    pub phoenix_market: UncheckedAccount<'info>,
-
-    /// CHECK: No constraint needed
-    pub protocol_fee_recipient: UncheckedAccount<'info>,
-
     #[account(
         mut,
-        seeds = [
-            MARKET_SEED.as_bytes(),
-            phoenix_market.key().as_ref()
-        ],
-        bump = market.bump,
         has_one = owner
     )]
     pub market: Box<Account<'info, Market>>,
-
-    pub base_token_mint: Account<'info, Mint>,
-
-    pub quote_token_mint: Account<'info, Mint>,
 }
