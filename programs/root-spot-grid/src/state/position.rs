@@ -43,6 +43,10 @@ pub struct PositionArgs {
     pub order_size_in_base_lots: u64
 }
 
+impl PositionArgs {
+    pub const LEN: usize = 8 + (1 * 2) + (4 * 8);
+}
+
 
 #[derive(Debug, Default)]
 #[account]
@@ -62,5 +66,5 @@ pub struct Position {
 }
 
 impl Position {
-    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + (2 * 2) + (4 * 8) + (15 * 17);
+    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + PositionArgs::LEN + (2 * 8) + (15 * 17);
 }
