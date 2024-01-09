@@ -28,8 +28,8 @@ export const handler = async() => {
         baseTokenMint: rootSdk.WRAPPED_SOL_MAINNET,
         quoteTokenMint: rootSdk.USDC_MAINNET,
         protocolFeePerFillBps: 5,
-        minOrderSizeInBaseLots: new anchor.BN(100),
-        minOrderSpacingInTicks: new anchor.BN(10)
+        minOrderSizeInBaseLots: new anchor.BN(250),
+        minOrderSpacingInTicks: new anchor.BN(25)
     });
 
     const result = await rootSdk.executeTransactions({
@@ -41,4 +41,4 @@ export const handler = async() => {
     console.log("Signature: ", result.signatures);
 }
 
-await handler();
+handler();

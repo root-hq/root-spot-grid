@@ -184,103 +184,109 @@ pub fn create_position(
         active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
     };
 
-    // STEP 7 - Prepare signer seeds for the next CPI calls
+    msg!("Spot grid trading strategy");
+    msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
+    msg!("Position args: {:?}", args);
+    msg!("Generated bids: {:?}", bids);
+    msg!("Generated asks: {:?}", asks);
 
-    let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
+    // // STEP 7 - Prepare signer seeds for the next CPI calls
 
-    let spot_grid_market = ctx.accounts.spot_grid_market.key();
+    // let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
 
-    let trade_manager_seeds = &[
-        TRADE_MANAGER_SEED.as_bytes(),
-        spot_grid_market.as_ref(),
-        &[trade_manager_bump],
-    ];
-    let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
+    // let spot_grid_market = ctx.accounts.spot_grid_market.key();
 
-    // STEP 8 - Acquire a seat if necessary
+    // let trade_manager_seeds = &[
+    //     TRADE_MANAGER_SEED.as_bytes(),
+    //     spot_grid_market.as_ref(),
+    //     &[trade_manager_bump],
+    // ];
+    // let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
 
-    let seat_account = ctx.accounts.seat.data.borrow();
-    msg!("seat_account length: {}", seat_account.len());
+    // // STEP 8 - Acquire a seat if necessary
 
-    let mut seat_approval_status = SeatApprovalStatus::NotApproved;
+    // let seat_account = ctx.accounts.seat.data.borrow();
+    // msg!("seat_account length: {}", seat_account.len());
 
-    if seat_account.len() > 0 {
-        msg!("Seat account is not initialized");
-        let seat_struct = bytemuck::from_bytes::<Seat>(seat_account.as_ref());
+    // let mut seat_approval_status = SeatApprovalStatus::NotApproved;
 
-        require!(
-            SeatApprovalStatus::from(seat_struct.approval_status)
-                != SeatApprovalStatus::Retired,
-            SpotGridError::PhoenixVaultSeatRetired
-        );
+    // if seat_account.len() > 0 {
+    //     msg!("Seat account is not initialized");
+    //     let seat_struct = bytemuck::from_bytes::<Seat>(seat_account.as_ref());
 
-        seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
-    }
+    //     require!(
+    //         SeatApprovalStatus::from(seat_struct.approval_status)
+    //             != SeatApprovalStatus::Retired,
+    //         SpotGridError::PhoenixVaultSeatRetired
+    //     );
 
-    msg!("seat_approval_status set to: {}", seat_approval_status);
+    //     seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
+    // }
 
-    if seat_approval_status == SeatApprovalStatus::NotApproved {
-        msg!("Not approved so claiming a seat");
+    // msg!("seat_approval_status set to: {}", seat_approval_status);
 
-        drop(seat_account);
+    // if seat_approval_status == SeatApprovalStatus::NotApproved {
+    //     msg!("Not approved so claiming a seat");
 
-        invoke_signed(
-            &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
-                &ctx.accounts.trade_manager.key(),
-                &ctx.accounts.phoenix_market.key(),
-            ),
-            &[
-                ctx.accounts.phoenix_program.to_account_info(),
-                ctx.accounts.log_authority.to_account_info(),
-                ctx.accounts.phoenix_market.to_account_info(),
-                ctx.accounts.seat_manager.to_account_info(),
-                ctx.accounts.seat_deposit_collector.to_account_info(),
-                ctx.accounts.trade_manager.to_account_info(),
-                ctx.accounts.seat.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            trade_manager_signer_seeds,
-        )?;
-    }
+    //     drop(seat_account);
 
-    // STEP 9 - Place post only orders
+    //     invoke_signed(
+    //         &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
+    //             &ctx.accounts.trade_manager.key(),
+    //             &ctx.accounts.phoenix_market.key(),
+    //         ),
+    //         &[
+    //             ctx.accounts.phoenix_program.to_account_info(),
+    //             ctx.accounts.log_authority.to_account_info(),
+    //             ctx.accounts.phoenix_market.to_account_info(),
+    //             ctx.accounts.seat_manager.to_account_info(),
+    //             ctx.accounts.seat_deposit_collector.to_account_info(),
+    //             ctx.accounts.trade_manager.to_account_info(),
+    //             ctx.accounts.seat.to_account_info(),
+    //             ctx.accounts.system_program.to_account_info(),
+    //         ],
+    //         trade_manager_signer_seeds,
+    //     )?;
+    // }
+
+    // // STEP 9 - Place post only orders
     
-    let client_order_id = u128::from_le_bytes(
-        ctx.accounts.trade_manager.key().to_bytes()[..16]
-            .try_into()
-            .unwrap(),
-    );
+    // let client_order_id = u128::from_le_bytes(
+    //     ctx.accounts.trade_manager.key().to_bytes()[..16]
+    //         .try_into()
+    //         .unwrap(),
+    // );
 
-    let mut multiple_order_packet =
-    MultipleOrderPacket::new(bids, asks, Some(client_order_id), false);
+    // let mut multiple_order_packet =
+    // MultipleOrderPacket::new(bids, asks, Some(client_order_id), false);
 
-    multiple_order_packet.failed_multiple_limit_order_behavior =
-        FailedMultipleLimitOrderBehavior::SkipOnInsufficientFundsAndAmendOnCross;
+    // multiple_order_packet.failed_multiple_limit_order_behavior =
+    //     FailedMultipleLimitOrderBehavior::SkipOnInsufficientFundsAndAmendOnCross;
 
-    invoke_signed(
-        &phoenix::program::create_new_multiple_order_instruction_with_custom_token_accounts(
-            &ctx.accounts.phoenix_market.key(),
-            &ctx.accounts.trade_manager.key(),
-            &ctx.accounts.base_token_vault_ac.key(),
-            &ctx.accounts.quote_token_vault_ac.key(),
-            &ctx.accounts.base_token_mint.key(),
-            &ctx.accounts.quote_token_mint.key(),
-            &multiple_order_packet,
-        ),
-        &[
-            ctx.accounts.phoenix_program.to_account_info(),
-            ctx.accounts.log_authority.to_account_info(),
-            ctx.accounts.phoenix_market.to_account_info(),
-            ctx.accounts.trade_manager.to_account_info(),
-            ctx.accounts.seat.to_account_info(),
-            ctx.accounts.base_token_vault_ac.to_account_info(),
-            ctx.accounts.quote_token_vault_ac.to_account_info(),
-            ctx.accounts.base_token_vault_ac.to_account_info(),
-            ctx.accounts.quote_token_vault_ac.to_account_info(),
-            ctx.accounts.token_program.to_account_info(),
-        ],
-        trade_manager_signer_seeds,
-    )?;
+    // invoke_signed(
+    //     &phoenix::program::create_new_multiple_order_instruction_with_custom_token_accounts(
+    //         &ctx.accounts.phoenix_market.key(),
+    //         &ctx.accounts.trade_manager.key(),
+    //         &ctx.accounts.base_token_vault_ac.key(),
+    //         &ctx.accounts.quote_token_vault_ac.key(),
+    //         &ctx.accounts.base_token_mint.key(),
+    //         &ctx.accounts.quote_token_mint.key(),
+    //         &multiple_order_packet,
+    //     ),
+    //     &[
+    //         ctx.accounts.phoenix_program.to_account_info(),
+    //         ctx.accounts.log_authority.to_account_info(),
+    //         ctx.accounts.phoenix_market.to_account_info(),
+    //         ctx.accounts.trade_manager.to_account_info(),
+    //         ctx.accounts.seat.to_account_info(),
+    //         ctx.accounts.base_token_vault_ac.to_account_info(),
+    //         ctx.accounts.quote_token_vault_ac.to_account_info(),
+    //         ctx.accounts.base_token_vault_ac.to_account_info(),
+    //         ctx.accounts.quote_token_vault_ac.to_account_info(),
+    //         ctx.accounts.token_program.to_account_info(),
+    //     ],
+    //     trade_manager_signer_seeds,
+    // )?;
 
 
     Ok(())

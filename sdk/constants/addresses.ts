@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 
 export const ROOT_SPOT_GRID_PROGRAM_ID = new anchor.web3.PublicKey(
-  "Bf7X9xMm4MNDpg8CjRvRwuyAabZPdQtDFH2kLPTPNuur"
+  "13uxuLoQHvpp1K1571WcgoTYEV4Ys5ni7LqjBZiTmNNx"
 );
 
 export const ROOT_PROTOCOL_FEE_MULTISIG = new anchor.web3.PublicKey(

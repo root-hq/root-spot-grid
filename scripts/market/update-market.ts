@@ -48,4 +48,4 @@ export const handler = async() => {
     console.log("Signature: ", result.signatures);
 }
 
-await handler();
+handler();
