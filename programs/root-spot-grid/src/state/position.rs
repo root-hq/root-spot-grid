@@ -10,6 +10,10 @@ pub struct OrderParams {
     pub is_null: bool,
 }
 
+impl OrderParams {
+    pub const LEN: usize = (3 * 8) + (2 * 1);
+}
+
 impl Default for OrderParams {
     fn default() -> Self {
         OrderParams {
@@ -66,5 +70,5 @@ pub struct Position {
 }
 
 impl Position {
-    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + PositionArgs::LEN + (2 * 8) + (15 * 17);
+    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + PositionArgs::LEN + (2 * 8) + (MAX_GRIDS_PER_POSITION * OrderParams::LEN);
 }

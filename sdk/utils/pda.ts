@@ -34,10 +34,10 @@ export const getTradeManagerAddress = (
 };
 
 export const getBaseTokenVaultAddress = (
-  vault: anchor.web3.PublicKey
+  positionAddress: anchor.web3.PublicKey
 ): anchor.web3.PublicKey => {
   let [baseTokenVaultAddr] = anchor.web3.PublicKey.findProgramAddressSync(
-    [BASE_TOKEN_VAULT_SEED, vault.toBuffer()],
+    [BASE_TOKEN_VAULT_SEED, positionAddress.toBuffer()],
     ROOT_SPOT_GRID_PROGRAM_ID
   );
 
@@ -45,10 +45,10 @@ export const getBaseTokenVaultAddress = (
 };
 
 export const getQuoteTokenVaultAddress = (
-  vault: anchor.web3.PublicKey
+  positionAddress: anchor.web3.PublicKey
 ): anchor.web3.PublicKey => {
   let [quoteTokenVaultAddr] = anchor.web3.PublicKey.findProgramAddressSync(
-    [QUOTE_TOKEN_VAULT_SEED, vault.toBuffer()],
+    [QUOTE_TOKEN_VAULT_SEED, positionAddress.toBuffer()],
     ROOT_SPOT_GRID_PROGRAM_ID
   );
 

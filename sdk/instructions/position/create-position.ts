@@ -35,8 +35,8 @@ export const createPosition = async({
 
     const positionAddress = getPositionAddress(positionKey.publicKey);
     
-    const baseTokenVaultAc = getBaseTokenVaultAddress(spotGridMarketAddress);
-    const quoteTokenVaultAc = getQuoteTokenVaultAddress(spotGridMarketAddress);
+    const baseTokenVaultAc = getBaseTokenVaultAddress(positionAddress);
+    const quoteTokenVaultAc = getQuoteTokenVaultAddress(positionAddress);
 
     const phoenixClient = await Phoenix.Client.createWithMarketAddresses(
         provider.connection,
