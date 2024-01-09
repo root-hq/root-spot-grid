@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getPositionAddress, getQuoteTokenVaultAddress, getRootProgram, getSpotGridMarketAddress, getTradeManagerAddress } from "../../utils";
+import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getPositionAddress, getQuoteTokenVaultAddress, getRootProgram, getTradeManagerAddress, requestComputeUnits } from "../../utils";
 import { Market, PositionArgs } from "../../types";
 import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
 import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
@@ -29,7 +29,6 @@ export const createPosition = async({
     const market = await rootProgram.account.market.fetch(spotGridMarketAddress) as Market;
 
     const phoenixMarket = market.phoenixMarket;
-    const tradeManager = getTradeManagerAddress(spotGridMarketAddress);
     const baseTokenMint = market.baseTokenMint;
     const quoteTokenMint = market.quoteTokenMint;
 
@@ -37,6 +36,7 @@ export const createPosition = async({
     
     const baseTokenVaultAc = getBaseTokenVaultAddress(positionAddress);
     const quoteTokenVaultAc = getQuoteTokenVaultAddress(positionAddress);
+    const tradeManager = getTradeManagerAddress(positionAddress);
 
     const phoenixClient = await Phoenix.Client.createWithMarketAddresses(
         provider.connection,
@@ -57,6 +57,9 @@ export const createPosition = async({
 
     
     const transaction = new anchor.web3.Transaction();
+
+    const additionalUnitsIx = requestComputeUnits(1_400_000, 1);
+    transaction.add(...additionalUnitsIx);
 
     try {
         const ix = await rootProgram

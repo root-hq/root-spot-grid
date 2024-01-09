@@ -5,18 +5,22 @@ import {
   SOLANA_MAINNET_RPC,
 } from "../constants";
 import { TransactionInfo } from "./types";
+import { TransactionInstruction } from "@solana/web3.js";
 
 export const requestComputeUnits = (
   unitsRequested: number,
   additionalFee: number
-) => {
-  const additionalComputeBudgetInstruction =
-    anchor.web3.ComputeBudgetProgram.requestUnits({
+): TransactionInstruction[] => {
+  const computeLimitIx =
+    anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({
       units: unitsRequested,
-      additionalFee: additionalFee,
     });
 
-  return additionalComputeBudgetInstruction;
+  const computeUnitPriceIx = anchor.web3.ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: additionalFee,
+  })
+
+  return [computeLimitIx, computeUnitPriceIx];
 };
 
 export const getConnection = (network) => {

@@ -101,7 +101,7 @@ export type RootSpotGrid = {
         },
         {
           "name": "phoenixMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -554,7 +554,7 @@ export const IDL: RootSpotGrid = {
         },
         {
           "name": "phoenixMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

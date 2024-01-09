@@ -23,10 +23,10 @@ export const getSpotGridMarketAddress = (
 };
 
 export const getTradeManagerAddress = (
-  vault: anchor.web3.PublicKey
+  positionAddress: anchor.web3.PublicKey
 ): anchor.web3.PublicKey => {
   let [tradeManagerAddr] = anchor.web3.PublicKey.findProgramAddressSync(
-    [TRADE_MANAGER_SEED, vault.toBuffer()],
+    [TRADE_MANAGER_SEED, positionAddress.toBuffer()],
     ROOT_SPOT_GRID_PROGRAM_ID
   );
 

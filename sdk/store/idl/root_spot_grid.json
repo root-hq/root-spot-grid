@@ -101,7 +101,7 @@
         },
         {
           "name": "phoenixMarket",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
