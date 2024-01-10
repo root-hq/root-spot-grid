@@ -56,4 +56,8 @@ pub mod root_spot_grid {
     pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
         instructions::close_position(ctx)
     }
+
+    pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
+        instructions::refresh_orders(ctx)
+    }
 }
