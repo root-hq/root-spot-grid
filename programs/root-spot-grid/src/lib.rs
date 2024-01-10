@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
-pub mod state;
-pub mod instructions;
 pub mod constants;
 pub mod errors;
+pub mod instructions;
+pub mod state;
 pub mod utils;
 
 declare_id!("13uxuLoQHvpp1K1571WcgoTYEV4Ys5ni7LqjBZiTmNNx");
@@ -21,9 +21,14 @@ pub mod root_spot_grid {
         ctx: Context<InitializeMarket>,
         protocol_fee_per_fill_bps: u16,
         min_order_spacing_in_ticks: u64,
-        min_order_size_in_base_lots: u64
+        min_order_size_in_base_lots: u64,
     ) -> Result<()> {
-        instructions::initialize_market(ctx, protocol_fee_per_fill_bps, min_order_spacing_in_ticks, min_order_size_in_base_lots)
+        instructions::initialize_market(
+            ctx,
+            protocol_fee_per_fill_bps,
+            min_order_spacing_in_ticks,
+            min_order_size_in_base_lots,
+        )
     }
 
     pub fn update_market(
@@ -32,25 +37,23 @@ pub mod root_spot_grid {
         min_order_spacing_in_ticks: Option<u64>,
         new_min_order_size_in_base_lots: Option<u64>,
     ) -> Result<()> {
-        instructions::update_market(ctx, new_protocol_fee_per_fill_bps, min_order_spacing_in_ticks, new_min_order_size_in_base_lots)
+        instructions::update_market(
+            ctx,
+            new_protocol_fee_per_fill_bps,
+            min_order_spacing_in_ticks,
+            new_min_order_size_in_base_lots,
+        )
     }
 
-    pub fn create_position(
-        ctx: Context<CreatePosition>,
-        args: PositionArgs
-    ) -> Result<()> {
+    pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
         instructions::create_position(ctx, args)
     }
 
-    pub fn cancel_orders(
-        ctx: Context<CancelOrders>
-    ) -> Result<()> {
+    pub fn cancel_orders(ctx: Context<CancelOrders>) -> Result<()> {
         instructions::cancel_orders(ctx)
     }
 
-    pub fn close_position(
-        ctx: Context<ClosePosition>
-    ) -> Result<()> {
+    pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
         instructions::close_position(ctx)
     }
 }

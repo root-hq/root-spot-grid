@@ -1,5 +1,5 @@
-use anchor_lang::prelude::*;
 use crate::constants::MAX_GRIDS_PER_POSITION;
+use anchor_lang::prelude::*;
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy)]
 pub struct OrderParams {
@@ -21,7 +21,7 @@ impl Default for OrderParams {
             price_in_ticks: 0u64,
             size_in_base_lots: 0u64,
             is_bid: true,
-            is_null: true
+            is_null: true,
         }
     }
 }
@@ -29,7 +29,7 @@ impl Default for OrderParams {
 #[derive(Debug, AnchorDeserialize, AnchorSerialize, Clone, Copy)]
 pub enum Mode {
     Arithmetic,
-    Geometric
+    Geometric,
 }
 
 impl Default for Mode {
@@ -44,13 +44,12 @@ pub struct PositionArgs {
     pub num_grids: u64,
     pub min_price_in_ticks: u64,
     pub max_price_in_ticks: u64,
-    pub order_size_in_base_lots: u64
+    pub order_size_in_base_lots: u64,
 }
 
 impl PositionArgs {
     pub const LEN: usize = 8 + (1 * 2) + (4 * 8);
 }
-
 
 #[derive(Debug, Default)]
 #[account]
@@ -62,13 +61,18 @@ pub struct Position {
     pub trade_manager: Pubkey,
 
     pub position_args: PositionArgs,
-    
+
     pub fee_growth_base: u64,
     pub fee_growth_quote: u64,
-    
-    pub active_orders: [OrderParams; MAX_GRIDS_PER_POSITION]
+
+    pub active_orders: [OrderParams; MAX_GRIDS_PER_POSITION],
 }
 
 impl Position {
-    pub const LEN: usize = 8 + (1 * 2) + (4 * 32) + PositionArgs::LEN + (2 * 8) + (MAX_GRIDS_PER_POSITION * OrderParams::LEN);
+    pub const LEN: usize = 8
+        + (1 * 2)
+        + (4 * 32)
+        + PositionArgs::LEN
+        + (2 * 8)
+        + (MAX_GRIDS_PER_POSITION * OrderParams::LEN);
 }

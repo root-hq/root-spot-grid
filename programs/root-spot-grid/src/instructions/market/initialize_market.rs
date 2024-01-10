@@ -1,16 +1,15 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
 
-use crate::state::Market;
 use crate::constants::MARKET_SEED;
+use crate::state::Market;
 
 pub fn initialize_market(
     ctx: Context<InitializeMarket>,
     protocol_fee_per_fill_bps: u16,
     min_order_spacing_in_ticks: u64,
-    min_order_size_in_base_lots: u64
+    min_order_size_in_base_lots: u64,
 ) -> Result<()> {
-
     **ctx.accounts.market = Market {
         bump: *ctx.bumps.get("market").unwrap(),
         phoenix_market: ctx.accounts.phoenix_market.key(),
@@ -22,7 +21,7 @@ pub fn initialize_market(
         min_order_size_in_base_lots,
         protocol_fee_per_fill_bps,
         claimed_protocol_fee_in_quote_tokens: 0,
-        unclaimed_protocol_fee_in_quote_tokens: 0
+        unclaimed_protocol_fee_in_quote_tokens: 0,
     };
 
     Ok(())

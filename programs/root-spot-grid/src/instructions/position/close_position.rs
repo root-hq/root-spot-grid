@@ -1,14 +1,11 @@
-use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke_signed;
-use anchor_spl::token::{Token, Mint, TokenAccount, Transfer};
+use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::Position;
-use crate::constants::*;
+use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program::invoke_signed;
+use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
 
-pub fn close_position(
-    ctx: Context<ClosePosition>
-) -> Result<()> {
-    
+pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
     let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
 
     let position_address = ctx.accounts.position.key();
@@ -42,7 +39,7 @@ pub fn close_position(
             },
             trade_manager_signer_seeds,
         ),
-        ctx.accounts.base_token_vault_ac.amount
+        ctx.accounts.base_token_vault_ac.amount,
     )?;
 
     anchor_spl::token::transfer(
@@ -55,7 +52,7 @@ pub fn close_position(
             },
             trade_manager_signer_seeds,
         ),
-        ctx.accounts.quote_token_vault_ac.amount
+        ctx.accounts.quote_token_vault_ac.amount,
     )?;
 
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(

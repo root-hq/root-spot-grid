@@ -7,7 +7,7 @@ pub struct Market {
     pub phoenix_market: Pubkey,
     pub owner: Pubkey,
     pub protocol_fee_recipient: Pubkey,
-    
+
     pub base_token_mint: Pubkey,
     pub quote_token_mint: Pubkey,
 
@@ -15,7 +15,7 @@ pub struct Market {
 
     pub min_order_spacing_in_ticks: u64,
     pub min_order_size_in_base_lots: u64,
-    
+
     pub claimed_protocol_fee_in_quote_tokens: u64,
     pub unclaimed_protocol_fee_in_quote_tokens: u64,
 }

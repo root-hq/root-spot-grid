@@ -68,23 +68,14 @@ pub fn load_header(info: &AccountInfo) -> Result<MarketHeader> {
 pub fn get_best_bid_and_ask(
     market: &dyn Market<Pubkey, FIFOOrderId, FIFORestingOrder, OrderPacket>,
 ) -> (u64, u64) {
-
     let ladder = market.get_ladder(1);
     let best_bid = match ladder.bids.get(0) {
-        Some(ladder_order) => {
-            ladder_order.price_in_ticks
-        },
-        None => {
-            0u64
-        }
+        Some(ladder_order) => ladder_order.price_in_ticks,
+        None => 0u64,
     };
     let best_ask = match ladder.asks.get(0) {
-        Some(ladder_order) => {
-            ladder_order.price_in_ticks
-        },
-        None => {
-            0u64
-        }
+        Some(ladder_order) => ladder_order.price_in_ticks,
+        None => 0u64,
     };
 
     (best_bid, best_ask)

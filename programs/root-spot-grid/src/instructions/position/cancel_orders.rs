@@ -1,13 +1,10 @@
+use crate::constants::*;
+use crate::state::{OrderParams, Position};
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke_signed;
-use anchor_spl::token::{Token, Mint, TokenAccount};
-use crate::state::{Position, OrderParams};
-use crate::constants::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
-pub fn cancel_orders(
-    ctx: Context<CancelOrders>
-) -> Result<()> {
-    
+pub fn cancel_orders(ctx: Context<CancelOrders>) -> Result<()> {
     let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
 
     let position_address = ctx.accounts.position.key();
@@ -18,7 +15,7 @@ pub fn cancel_orders(
         &[trade_manager_bump],
     ];
     let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
-    
+
     // Cancel all old orders
     invoke_signed(
         &phoenix::program::create_cancel_all_orders_instruction_with_custom_token_accounts(
@@ -41,7 +38,7 @@ pub fn cancel_orders(
         ],
         trade_manager_signer_seeds,
     )?;
-    
+
     ctx.accounts.position.active_orders = [OrderParams::default(); 15];
 
     // Withdraw all funds

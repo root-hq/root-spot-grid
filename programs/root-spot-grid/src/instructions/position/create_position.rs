@@ -3,38 +3,54 @@ use anchor_lang::{
     __private::bytemuck::{self},
     solana_program::program::{invoke, invoke_signed},
 };
-use anchor_spl::token::{Token, Mint, TokenAccount, Transfer};
-use phoenix::program::{MarketHeader, Seat};
-use phoenix::program::new_order::{CondensedOrder, MultipleOrderPacket, FailedMultipleLimitOrderBehavior};
+use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
+use phoenix::program::new_order::{
+    CondensedOrder, FailedMultipleLimitOrderBehavior, MultipleOrderPacket,
+};
 use phoenix::program::status::SeatApprovalStatus;
+use phoenix::program::{MarketHeader, Seat};
 use phoenix::quantities::WrapperU64;
-use phoenix::state::Side;
 use phoenix::state::markets::OrderId;
+use phoenix::state::Side;
 
-use crate::state::{Market, Position, OrderParams, PositionArgs};
 use crate::constants::*;
 use crate::errors::SpotGridError;
-use crate::utils::{load_header, get_best_bid_and_ask, parse_order_ids_from_return_data};
+use crate::state::{Market, OrderParams, Position, PositionArgs};
+use crate::utils::{get_best_bid_and_ask, load_header, parse_order_ids_from_return_data};
 
-pub fn create_position(
-    ctx: Context<CreatePosition>,
-    args: PositionArgs
-) -> Result<()> {
-    
+pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
 
-    require!(args.min_price_in_ticks < args.max_price_in_ticks, SpotGridError::InvalidPriceRange);
+    require!(
+        args.min_price_in_ticks < args.max_price_in_ticks,
+        SpotGridError::InvalidPriceRange
+    );
 
     let mut num_grids = args.num_grids;
-    let mut spacing_per_order_in_ticks = args.max_price_in_ticks.checked_sub(args.min_price_in_ticks).unwrap().checked_div(num_grids).unwrap();
-    let order_size_in_base_lots = args.order_size_in_base_lots.max(ctx.accounts.spot_grid_market.min_order_size_in_base_lots);
+    let mut spacing_per_order_in_ticks = args
+        .max_price_in_ticks
+        .checked_sub(args.min_price_in_ticks)
+        .unwrap()
+        .checked_div(num_grids)
+        .unwrap();
+    let order_size_in_base_lots = args
+        .order_size_in_base_lots
+        .max(ctx.accounts.spot_grid_market.min_order_size_in_base_lots);
 
     if spacing_per_order_in_ticks < ctx.accounts.spot_grid_market.min_order_spacing_in_ticks {
         spacing_per_order_in_ticks = ctx.accounts.spot_grid_market.min_order_spacing_in_ticks;
-        num_grids = args.max_price_in_ticks.checked_sub(args.min_price_in_ticks).unwrap().checked_div(spacing_per_order_in_ticks).unwrap();
+        num_grids = args
+            .max_price_in_ticks
+            .checked_sub(args.min_price_in_ticks)
+            .unwrap()
+            .checked_div(spacing_per_order_in_ticks)
+            .unwrap();
     }
 
-    require!(num_grids as usize <= MAX_GRIDS_PER_POSITION, SpotGridError::ExceededMaxNumGrids);
+    require!(
+        num_grids as usize <= MAX_GRIDS_PER_POSITION,
+        SpotGridError::ExceededMaxNumGrids
+    );
 
     let mut order_tuples: Vec<(u64, u64)> = vec![];
     let mut left_price_tracker = args.min_price_in_ticks;
@@ -57,15 +73,21 @@ pub fn create_position(
     let market_header = load_header(&ctx.accounts.phoenix_market)?;
     let market_data = ctx.accounts.phoenix_market.data.borrow();
     let (_, market_bytes) = market_data.split_at(std::mem::size_of::<MarketHeader>());
-    let market_state = phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
-        .map_err(|_| {
-            msg!("Failed to deserialize market");
-            SpotGridError::PhoenixMarketError
-        })?
-        .inner;
+    let market_state =
+        phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
+            .map_err(|_| {
+                msg!("Failed to deserialize market");
+                SpotGridError::PhoenixMarketError
+            })?
+            .inner;
 
     let best_bid_ask_prices = get_best_bid_and_ask(market_state);
-    let current_market_price = best_bid_ask_prices.0.checked_add(best_bid_ask_prices.1).unwrap().checked_div(2).unwrap();
+    let current_market_price = best_bid_ask_prices
+        .0
+        .checked_add(best_bid_ask_prices.1)
+        .unwrap()
+        .checked_div(2)
+        .unwrap();
 
     for tuple in order_tuples {
         // If current_market_price is below the range, place an ask order
@@ -76,24 +98,22 @@ pub fn create_position(
                 price_in_ticks: tuple.1,
                 size_in_base_lots: order_size_in_base_lots,
                 last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None
+                last_valid_unix_timestamp_in_seconds: None,
             });
-        }
-        else if current_market_price > tuple.0 && current_market_price > tuple.1 {
+        } else if current_market_price > tuple.0 && current_market_price > tuple.1 {
             bids.push(CondensedOrder {
                 price_in_ticks: tuple.0,
                 size_in_base_lots: order_size_in_base_lots,
                 last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None
+                last_valid_unix_timestamp_in_seconds: None,
             });
-        }
-        else if current_market_price > tuple.0 && current_market_price < tuple.1 {
+        } else if current_market_price > tuple.0 && current_market_price < tuple.1 {
             // Placing a bid for now
             bids.push(CondensedOrder {
                 price_in_ticks: tuple.0,
                 size_in_base_lots: order_size_in_base_lots,
                 last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None
+                last_valid_unix_timestamp_in_seconds: None,
             });
         }
     }
@@ -104,27 +124,39 @@ pub fn create_position(
     let mut base_token_amount = 0u64;
     let mut quote_token_amount = 0u64;
 
-    let tick_size_in_quote_atoms_per_base_unit = market_header.get_tick_size_in_quote_atoms_per_base_unit().as_u64();
+    let tick_size_in_quote_atoms_per_base_unit = market_header
+        .get_tick_size_in_quote_atoms_per_base_unit()
+        .as_u64();
 
     let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
     let base_atoms_per_raw_base_unit = 10u64.pow(market_header.base_params.decimals);
     let raw_base_units_per_base_unit = market_header.raw_base_units_per_base_unit.max(1);
-    require!((base_atoms_per_raw_base_unit * raw_base_units_per_base_unit as u64)
-        % base_atoms_per_base_lot
-        == 0, SpotGridError::InvalidBaseLotSize);
+    require!(
+        (base_atoms_per_raw_base_unit * raw_base_units_per_base_unit as u64)
+            % base_atoms_per_base_lot
+            == 0,
+        SpotGridError::InvalidBaseLotSize
+    );
     let num_base_lots_per_base_unit = (base_atoms_per_raw_base_unit
         * raw_base_units_per_base_unit as u64)
         / base_atoms_per_base_lot;
-    
+
     for bid in &bids {
-        let quote_atoms_needed = bid.price_in_ticks.checked_mul(tick_size_in_quote_atoms_per_base_unit).unwrap().checked_mul(bid.size_in_base_lots).unwrap().checked_div(num_base_lots_per_base_unit).unwrap();
+        let quote_atoms_needed = bid
+            .price_in_ticks
+            .checked_mul(tick_size_in_quote_atoms_per_base_unit)
+            .unwrap()
+            .checked_mul(bid.size_in_base_lots)
+            .unwrap()
+            .checked_div(num_base_lots_per_base_unit)
+            .unwrap();
         quote_token_amount += quote_atoms_needed;
     }
 
     for ask in &asks {
         base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
     }
-    
+
     // STEP 4 - Transfer the calculated amount to the trade_manager
 
     anchor_spl::token::transfer(
@@ -199,8 +231,7 @@ pub fn create_position(
         let seat_struct = bytemuck::from_bytes::<Seat>(seat_account.as_ref());
 
         require!(
-            SeatApprovalStatus::from(seat_struct.approval_status)
-                != SeatApprovalStatus::Retired,
+            SeatApprovalStatus::from(seat_struct.approval_status) != SeatApprovalStatus::Retired,
             SpotGridError::PhoenixVaultSeatRetired
         );
 
@@ -219,7 +250,10 @@ pub fn create_position(
         msg!("log auth: {}", ctx.accounts.log_authority.key());
         msg!("seat: {}", ctx.accounts.seat.key());
         msg!("seat manager: {}", ctx.accounts.seat_manager.key());
-        msg!("seat deposit collector: {}", ctx.accounts.seat_deposit_collector.key());
+        msg!(
+            "seat deposit collector: {}",
+            ctx.accounts.seat_deposit_collector.key()
+        );
 
         invoke_signed(
             &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
@@ -241,7 +275,7 @@ pub fn create_position(
     }
 
     // STEP 8 - Place post only orders
-    
+
     let mut order_ids = vec![];
 
     let client_order_id = u128::from_le_bytes(
@@ -251,7 +285,7 @@ pub fn create_position(
     );
 
     let mut multiple_order_packet =
-    MultipleOrderPacket::new(bids, asks, Some(client_order_id), false);
+        MultipleOrderPacket::new(bids, asks, Some(client_order_id), false);
 
     multiple_order_packet.failed_multiple_limit_order_behavior =
         FailedMultipleLimitOrderBehavior::SkipOnInsufficientFundsAndAmendOnCross;
@@ -310,7 +344,7 @@ pub fn create_position(
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: order_size_in_base_lots,
                             is_bid: false,
-                            is_null: false
+                            is_null: false,
                         };
                     })
                     .unwrap_or_else(|| msg!("Ask order could not be placed"));
@@ -325,7 +359,7 @@ pub fn create_position(
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: order_size_in_base_lots,
                             is_bid: true,
-                            is_null: false
+                            is_null: false,
                         };
                     })
                     .unwrap_or_else(|| msg!("Bid order could not be placed"));
@@ -351,9 +385,8 @@ pub fn create_position(
         },
         fee_growth_base: 0,
         fee_growth_quote: 0,
-        active_orders: orders_params
+        active_orders: orders_params,
     };
-
 
     Ok(())
 }
