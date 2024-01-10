@@ -16,5 +16,6 @@ pub enum SpotGridError {
     PhoenixVaultSeatRetired,
     #[msg("Invalid base lot size")]
     InvalidBaseLotSize,
-
+    #[msg("Pending open orders before closure")]
+    PendingOpenOrders,
 }

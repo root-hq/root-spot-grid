@@ -8,11 +8,13 @@ use phoenix::program::{MarketHeader, Seat};
 use phoenix::program::new_order::{CondensedOrder, MultipleOrderPacket, FailedMultipleLimitOrderBehavior};
 use phoenix::program::status::SeatApprovalStatus;
 use phoenix::quantities::WrapperU64;
+use phoenix::state::Side;
+use phoenix::state::markets::OrderId;
 
 use crate::state::{Market, Position, OrderParams, PositionArgs};
 use crate::constants::*;
 use crate::errors::SpotGridError;
-use crate::utils::{load_header, get_best_bid_and_ask};
+use crate::utils::{load_header, get_best_bid_and_ask, parse_order_ids_from_return_data};
 
 pub fn create_position(
     ctx: Context<CreatePosition>,
@@ -164,26 +166,6 @@ pub fn create_position(
         ],
     )?;
 
-    // STEP 6 - Assign the position state to the PDA
-
-    **ctx.accounts.position = Position {
-        bump: *ctx.bumps.get("position").unwrap(),
-        position_key: ctx.accounts.position_key.key(),
-        market: ctx.accounts.spot_grid_market.key(),
-        owner: ctx.accounts.creator.key(),
-        trade_manager: ctx.accounts.trade_manager.key(),
-        position_args: PositionArgs {
-            mode: args.mode,
-            num_grids,
-            min_price_in_ticks: final_min_price_in_ticks,
-            max_price_in_ticks: final_max_price_in_ticks,
-            order_size_in_base_lots,
-        },
-        fee_growth_base: 0,
-        fee_growth_quote: 0,
-        active_orders: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
-    };
-
     msg!("Spot grid trading strategy");
     msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
     msg!("Position args: {:?}", args);
@@ -192,7 +174,7 @@ pub fn create_position(
     msg!("Base tokens to deposit: {:?}", base_token_amount);
     msg!("Quote tokens to deposit: {:?}", quote_token_amount);
 
-    // STEP 7 - Prepare signer seeds for the next CPI calls
+    // STEP 6 - Prepare signer seeds for the next CPI calls
 
     let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
 
@@ -205,7 +187,7 @@ pub fn create_position(
     ];
     let trade_manager_signer_seeds = &[&trade_manager_seeds[..]];
 
-    // STEP 8 - Acquire a seat if necessary
+    // STEP 7 - Acquire a seat if necessary
 
     let seat_account = ctx.accounts.seat.data.borrow();
     msg!("seat_account length: {}", seat_account.len());
@@ -258,8 +240,10 @@ pub fn create_position(
         )?;
     }
 
-    // STEP 9 - Place post only orders
+    // STEP 8 - Place post only orders
     
+    let mut order_ids = vec![];
+
     let client_order_id = u128::from_le_bytes(
         ctx.accounts.trade_manager.key().to_bytes()[..16]
             .try_into()
@@ -296,6 +280,79 @@ pub fn create_position(
         ],
         trade_manager_signer_seeds,
     )?;
+
+    // STEP 9 - Assign the position state to the PDA
+    let mut orders_params = [OrderParams::default(); 15];
+
+    parse_order_ids_from_return_data(&mut order_ids)?;
+
+    let market_data = ctx.accounts.phoenix_market.data.borrow();
+    let (_, market_bytes) = market_data.split_at(std::mem::size_of::<MarketHeader>());
+    let market_deserialized =
+        phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
+            .map_err(|_| {
+                msg!("Failed to deserialize market");
+                SpotGridError::PhoenixMarketError
+            })?
+            .inner;
+
+    let mut counter = 0;
+    for order_id in order_ids.iter() {
+        let side = Side::from_order_sequence_number(order_id.order_sequence_number);
+        match side {
+            Side::Ask => {
+                market_deserialized
+                    .get_book(Side::Ask)
+                    .get(&order_id)
+                    .map(|_| {
+                        orders_params[counter] = OrderParams {
+                            price_in_ticks: order_id.price_in_ticks(),
+                            order_sequence_number: order_id.order_sequence_number,
+                            size_in_base_lots: order_size_in_base_lots,
+                            is_bid: false,
+                            is_null: false
+                        };
+                    })
+                    .unwrap_or_else(|| msg!("Ask order could not be placed"));
+            }
+            Side::Bid => {
+                market_deserialized
+                    .get_book(Side::Bid)
+                    .get(&order_id)
+                    .map(|_| {
+                        orders_params[counter] = OrderParams {
+                            price_in_ticks: order_id.price_in_ticks(),
+                            order_sequence_number: order_id.order_sequence_number,
+                            size_in_base_lots: order_size_in_base_lots,
+                            is_bid: true,
+                            is_null: false
+                        };
+                    })
+                    .unwrap_or_else(|| msg!("Bid order could not be placed"));
+            }
+        }
+        counter += 1;
+    }
+
+    msg!("Order params: {:?}", orders_params);
+
+    **ctx.accounts.position = Position {
+        bump: *ctx.bumps.get("position").unwrap(),
+        position_key: ctx.accounts.position_key.key(),
+        market: ctx.accounts.spot_grid_market.key(),
+        owner: ctx.accounts.creator.key(),
+        trade_manager: ctx.accounts.trade_manager.key(),
+        position_args: PositionArgs {
+            mode: args.mode,
+            num_grids,
+            min_price_in_ticks: final_min_price_in_ticks,
+            max_price_in_ticks: final_max_price_in_ticks,
+            order_size_in_base_lots,
+        },
+        fee_growth_base: 0,
+        fee_growth_quote: 0,
+        active_orders: orders_params
+    };
 
 
     Ok(())
@@ -369,7 +426,7 @@ pub struct CreatePosition<'info> {
     pub quote_token_user_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        init,
+        init_if_needed,
         payer = creator,
         seeds = [BASE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
         bump,

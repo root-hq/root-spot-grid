@@ -42,4 +42,15 @@ pub mod root_spot_grid {
         instructions::create_position(ctx, args)
     }
 
+    pub fn cancel_orders(
+        ctx: Context<CancelOrders>
+    ) -> Result<()> {
+        instructions::cancel_orders(ctx)
+    }
+
+    pub fn close_position(
+        ctx: Context<ClosePosition>
+    ) -> Result<()> {
+        instructions::close_position(ctx)
+    }
 }

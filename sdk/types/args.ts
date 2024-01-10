@@ -15,10 +15,8 @@ export enum Mode {
 
 export type ModeObject = {
     arithmetic: {};
-    geometric?: undefined;
 } | {
     geometric: {};
-    arithmetic?: undefined;
 }
 
 export const getModeObject = (mode: Mode): ModeObject => {

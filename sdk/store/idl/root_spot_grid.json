@@ -213,6 +213,158 @@
           }
         }
       ]
+    },
+    {
+      "name": "cancelOrders",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "phoenixMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tradeManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "logAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quotePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closePosition",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "phoenixMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tradeManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenUserAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenUserAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -447,6 +599,11 @@
       "code": 6006,
       "name": "InvalidBaseLotSize",
       "msg": "Invalid base lot size"
+    },
+    {
+      "code": 6007,
+      "name": "PendingOpenOrders",
+      "msg": "Pending open orders before closure"
     }
   ]
 }
