@@ -469,6 +469,17 @@
                 15
               ]
             }
+          },
+          {
+            "name": "pendingFills",
+            "type": {
+              "array": [
+                {
+                  "defined": "OrderParams"
+                },
+                15
+              ]
+            }
           }
         ]
       }

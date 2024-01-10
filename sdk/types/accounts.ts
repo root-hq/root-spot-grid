@@ -11,7 +11,8 @@ export interface Position {
     positionArgs: PositionArgs;
     feeGrowthBase: anchor.BN;
     feeGrowthQuote: anchor.BN;
-    activeOrders: OrderParams[]
+    activeOrders: OrderParams[];
+    pendingFills: OrderParams[];
 }
 
 export interface Market {

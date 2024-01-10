@@ -469,6 +469,17 @@ export type RootSpotGrid = {
                 15
               ]
             }
+          },
+          {
+            "name": "pendingFills",
+            "type": {
+              "array": [
+                {
+                  "defined": "OrderParams"
+                },
+                15
+              ]
+            }
           }
         ]
       }
@@ -1071,6 +1082,17 @@ export const IDL: RootSpotGrid = {
           },
           {
             "name": "activeOrders",
+            "type": {
+              "array": [
+                {
+                  "defined": "OrderParams"
+                },
+                15
+              ]
+            }
+          },
+          {
+            "name": "pendingFills",
             "type": {
               "array": [
                 {

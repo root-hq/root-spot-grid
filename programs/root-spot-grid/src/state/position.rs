@@ -66,6 +66,7 @@ pub struct Position {
     pub fee_growth_quote: u64,
 
     pub active_orders: [OrderParams; MAX_GRIDS_PER_POSITION],
+    pub pending_fills: [OrderParams; MAX_GRIDS_PER_POSITION],
 }
 
 impl Position {
@@ -74,5 +75,5 @@ impl Position {
         + (4 * 32)
         + PositionArgs::LEN
         + (2 * 8)
-        + (MAX_GRIDS_PER_POSITION * OrderParams::LEN);
+        + (2 * MAX_GRIDS_PER_POSITION * OrderParams::LEN);
 }

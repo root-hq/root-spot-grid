@@ -386,6 +386,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         fee_growth_base: 0,
         fee_growth_quote: 0,
         active_orders: orders_params,
+        pending_fills: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
     };
 
     Ok(())
