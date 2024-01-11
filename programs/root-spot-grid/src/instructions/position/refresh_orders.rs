@@ -47,6 +47,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             not_null_counts += 1;
         }
     }
+    msg!("Active orders: {:?}", active_prices_map);
 
     // STEP 2 - Get the untracked filled orders as of now. Discard them from active_price_map
 
@@ -63,6 +64,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
         if market_state.get_book(side).get(&order_id).is_none() {
             // Order is fully filled.
+            msg!("Found fill: {:?}", order);
             active_prices_map.remove(&order.price_in_ticks);
             fill_map.insert(index_counter, order);
         }
@@ -76,6 +78,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     for (k,v) in fill_map.iter() {
         ctx.accounts.position.pending_fills[*k as usize] = *v;
     }
+    msg!("Pending fills buffer: {:?}", ctx.accounts.position.pending_fills);
 
     // STEP 4 - Initialize the bid/ask vectors starting with pending_fills. We keep track of all the new 
     // counter-fill prices using active_price_map so that a situation like bid/ask at the same price does not occur
@@ -94,13 +97,17 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         .unwrap_or(0)
         .checked_div(2)
         .unwrap_or(0);
+    msg!("Current market price: {}", current_market_price);
 
     for (k, v) in fill_map.iter_mut() {
         let order = *v;
         if order.is_bid {
+            msg!("Evaluating bid: {}", order.order_sequence_number);
             let counter_fill_price = order.price_in_ticks + spacing_per_order_in_ticks;
+            msg!("Counter fill price: {}", counter_fill_price);
             if counter_fill_price > current_market_price {
                 if !active_prices_map.contains(&counter_fill_price) {
+                    msg!("Can counter fill with an ask");
                     asks.push(CondensedOrder {
                         price_in_ticks: counter_fill_price,
                         size_in_base_lots: order.size_in_base_lots,
@@ -114,9 +121,12 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             }
         }
         else {
+            msg!("Evaluating ask: {}", order.order_sequence_number);
             let counter_fill_price = order.price_in_ticks - spacing_per_order_in_ticks;
+            msg!("Counter fill price: {}", counter_fill_price);
             if counter_fill_price < current_market_price {
                 if !active_prices_map.contains(&counter_fill_price) {
+                    msg!("Can counter fill with a bid");
                     bids.push(CondensedOrder {
                         price_in_ticks: counter_fill_price,
                         size_in_base_lots: order.size_in_base_lots,
@@ -135,6 +145,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     // then you need to place new orders making sure the previous pending_fills are prioritized first.
     // That's why this comes at last, and not above in the code.
     if not_null_counts == 0 {
+        msg!("There were zero active orders before. Maybe it was paused");
         let mut order_tuples: Vec<(u64, u64)> = vec![];
         let mut left_price_tracker = ctx.accounts.position.position_args.min_price_in_ticks;
         let mut right_price_tracker = ctx.accounts.position.position_args.min_price_in_ticks + spacing_per_order_in_ticks;
@@ -169,7 +180,10 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             index_counter += 1;
         }
     }
-    
+
+    msg!("Final bids: {:?}", bids);
+    msg!("Final asks: {:?}", asks);
+
     // STEP 6 - Prepare signer seeds for the next CPI calls
 
     let trade_manager_bump = *ctx.bumps.get("trade_manager").unwrap();
