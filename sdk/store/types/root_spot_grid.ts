@@ -365,6 +365,112 @@ export type RootSpotGrid = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "refreshOrders",
+      "accounts": [
+        {
+          "name": "cranker",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spotGridMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tradeManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "logAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "seat",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatDepositCollector",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quotePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixSeatManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -972,6 +1078,112 @@ export const IDL: RootSpotGrid = {
         {
           "name": "quoteTokenVaultAc",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "refreshOrders",
+      "accounts": [
+        {
+          "name": "cranker",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spotGridMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tradeManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "logAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "seat",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seatDepositCollector",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quotePhoenixVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "phoenixSeatManagerProgram",
+          "isMut": false,
           "isSigner": false
         },
         {

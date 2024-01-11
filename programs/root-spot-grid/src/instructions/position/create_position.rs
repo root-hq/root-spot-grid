@@ -4,8 +4,7 @@ use anchor_lang::{
     solana_program::program::{invoke, invoke_signed},
 };
 use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
-use phoenix::program::new_order::{
-    CondensedOrder, FailedMultipleLimitOrderBehavior, MultipleOrderPacket,
+use phoenix::program::new_order::{ FailedMultipleLimitOrderBehavior, MultipleOrderPacket,
 };
 use phoenix::program::status::SeatApprovalStatus;
 use phoenix::program::{MarketHeader, Seat};
@@ -16,7 +15,7 @@ use phoenix::state::Side;
 use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
-use crate::utils::{get_best_bid_and_ask, load_header, parse_order_ids_from_return_data};
+use crate::utils::{ load_header, parse_order_ids_from_return_data, generate_default_grid};
 
 pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
@@ -67,9 +66,6 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
 
     // STEP 2 - Deserialize the current market state and generate bid/ask orders
 
-    let mut bids: Vec<CondensedOrder> = vec![];
-    let mut asks: Vec<CondensedOrder> = vec![];
-
     let market_header = load_header(&ctx.accounts.phoenix_market)?;
     let market_data = ctx.accounts.phoenix_market.data.borrow();
     let (_, market_bytes) = market_data.split_at(std::mem::size_of::<MarketHeader>());
@@ -81,42 +77,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
             })?
             .inner;
 
-    let best_bid_ask_prices = get_best_bid_and_ask(market_state);
-    let current_market_price = best_bid_ask_prices
-        .0
-        .checked_add(best_bid_ask_prices.1)
-        .unwrap()
-        .checked_div(2)
-        .unwrap();
-
-    for tuple in order_tuples {
-        // If current_market_price is below the range, place an ask order
-        // If current_market_price is above the range, place a bid order
-        // If current_market_price is between the range, prefer a bid order over an ask order
-        if current_market_price < tuple.0 && current_market_price < tuple.1 {
-            asks.push(CondensedOrder {
-                price_in_ticks: tuple.1,
-                size_in_base_lots: order_size_in_base_lots,
-                last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None,
-            });
-        } else if current_market_price > tuple.0 && current_market_price > tuple.1 {
-            bids.push(CondensedOrder {
-                price_in_ticks: tuple.0,
-                size_in_base_lots: order_size_in_base_lots,
-                last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None,
-            });
-        } else if current_market_price > tuple.0 && current_market_price < tuple.1 {
-            // Placing a bid for now
-            bids.push(CondensedOrder {
-                price_in_ticks: tuple.0,
-                size_in_base_lots: order_size_in_base_lots,
-                last_valid_slot: None,
-                last_valid_unix_timestamp_in_seconds: None,
-            });
-        }
-    }
+    let (bids, asks) = generate_default_grid(market_state, order_tuples, order_size_in_base_lots);
 
     // STEP 3 - Calculate and transfer the amount required by the trade_manager to be able to place
     //          orders successfully in the future

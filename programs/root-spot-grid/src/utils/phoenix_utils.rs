@@ -1,9 +1,12 @@
+use std::vec;
+
 use anchor_lang::prelude::*;
 use anchor_lang::{
     __private::bytemuck::{self},
     solana_program::program::get_return_data,
 };
 
+use phoenix::program::new_order::CondensedOrder;
 use phoenix::state::markets::{FIFORestingOrder, Market};
 use phoenix::state::OrderPacket;
 use phoenix::{program::MarketHeader, state::markets::FIFOOrderId};
@@ -79,4 +82,52 @@ pub fn get_best_bid_and_ask(
     };
 
     (best_bid, best_ask)
+}
+
+pub fn generate_default_grid(
+    market_state: &dyn Market<Pubkey, FIFOOrderId, FIFORestingOrder, OrderPacket>,
+    order_tuples: Vec<(u64, u64)>,
+    order_size_in_base_lots: u64
+) -> (Vec<CondensedOrder>, Vec<CondensedOrder>) {
+    let mut bids: Vec<CondensedOrder> = vec![];
+    let mut asks: Vec<CondensedOrder> = vec![];
+
+    let best_bid_ask_prices = get_best_bid_and_ask(market_state);
+    let current_market_price = best_bid_ask_prices
+        .0
+        .checked_add(best_bid_ask_prices.1)
+        .unwrap_or(0)
+        .checked_div(2)
+        .unwrap_or(0);
+
+    for tuple in order_tuples {
+        // If current_market_price is below the range, place an ask order
+        // If current_market_price is above the range, place a bid order
+        // If current_market_price is between the range, prefer a bid order over an ask order
+        if current_market_price < tuple.0 && current_market_price < tuple.1 {
+            asks.push(CondensedOrder {
+                price_in_ticks: tuple.1,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None,
+            });
+        } else if current_market_price > tuple.0 && current_market_price > tuple.1 {
+            bids.push(CondensedOrder {
+                price_in_ticks: tuple.0,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None,
+            });
+        } else if current_market_price > tuple.0 && current_market_price < tuple.1 {
+            // Placing a bid for now
+            bids.push(CondensedOrder {
+                price_in_ticks: tuple.0,
+                size_in_base_lots: order_size_in_base_lots,
+                last_valid_slot: None,
+                last_valid_unix_timestamp_in_seconds: None,
+            });
+        }
+    }
+
+    (bids, asks)
 }
