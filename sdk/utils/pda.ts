@@ -9,12 +9,14 @@ import {
 } from "../constants";
 
 export const getSpotGridMarketAddress = (
-  phoenixMarket: anchor.web3.PublicKey
+  phoenixMarket: anchor.web3.PublicKey,
+  spotGridMarketKey: anchor.web3.PublicKey
 ): anchor.web3.PublicKey => {
   let [spotGridMarketAddress,] = anchor.web3.PublicKey.findProgramAddressSync(
     [
       MARKET_SEED,
       phoenixMarket.toBuffer(),
+      spotGridMarketKey.toBuffer()
     ],
     ROOT_SPOT_GRID_PROGRAM_ID
   );

@@ -14,6 +14,7 @@ export interface InitializeMarketArgs extends WriteActionArgs {
 
 export interface InitializeMarketResult extends WriteActionResult {
     spotGridMarketAddress: anchor.web3.PublicKey;
+    spotGridMarketKey: anchor.web3.PublicKey;
 }
 
 export const initializeMarket = async({
@@ -29,7 +30,9 @@ export const initializeMarket = async({
 }: InitializeMarketArgs): Promise<InitializeMarketResult> => {
     let rootProgram = getRootProgram(provider);
 
-    let spotGridMarketAddress = getSpotGridMarketAddress(phoenixMarket);
+    let spotGridMarketKeypair = anchor.web3.Keypair.generate();
+
+    let spotGridMarketAddress = getSpotGridMarketAddress(phoenixMarket, spotGridMarketKeypair.publicKey);
 
     const transaction = new anchor.web3.Transaction();
 
@@ -40,6 +43,7 @@ export const initializeMarket = async({
             .accounts({
                 owner,
                 phoenixMarket,
+                spotGridMarketKey: spotGridMarketKeypair.publicKey,
                 protocolFeeRecipient,
                 market: spotGridMarketAddress,
                 baseTokenMint,
@@ -51,6 +55,7 @@ export const initializeMarket = async({
         
         return {
             spotGridMarketAddress,
+            spotGridMarketKey: spotGridMarketKeypair.publicKey,
             transactionInfos: [
                 {
                     transaction

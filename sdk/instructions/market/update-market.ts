@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { WriteActionArgs, WriteActionResult, getRootProgram, getSpotGridMarketAddress } from "../../utils";
+import { WriteActionArgs, WriteActionResult, getRootProgram } from "../../utils";
 
 export interface UpdateMarketArgs extends WriteActionArgs {
     spotGridMarketAddress: anchor.web3.PublicKey;

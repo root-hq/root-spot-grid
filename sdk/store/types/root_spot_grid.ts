@@ -21,6 +21,11 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "spotGridMarketKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "market",
           "isMut": true,
           "isSigner": false
@@ -485,6 +490,10 @@ export type RootSpotGrid = {
           },
           {
             "name": "phoenixMarket",
+            "type": "publicKey"
+          },
+          {
+            "name": "spotGridMarketKey",
             "type": "publicKey"
           },
           {
@@ -748,6 +757,11 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "spotGridMarketKey",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "market",
           "isMut": true,
           "isSigner": false
@@ -1212,6 +1226,10 @@ export const IDL: RootSpotGrid = {
           },
           {
             "name": "phoenixMarket",
+            "type": "publicKey"
+          },
+          {
+            "name": "spotGridMarketKey",
             "type": "publicKey"
           },
           {
