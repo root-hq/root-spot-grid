@@ -13,6 +13,9 @@ export interface CreatePositionArgs extends WriteActionArgs {
 
 export interface CreatePositionResult extends WriteActionResult {
     positionAddress: anchor.web3.PublicKey;
+    positionKey: anchor.web3.PublicKey;
+    tradeManagerAddress: anchor.web3.PublicKey;
+    seat: anchor.web3.PublicKey;
 }
 
 export const createPosition = async({
@@ -93,6 +96,9 @@ export const createPosition = async({
         
         return {
             positionAddress,
+            positionKey: positionKey.publicKey,
+            tradeManagerAddress: tradeManager,
+            seat,
             transactionInfos: [
                 {
                     transaction

@@ -38,6 +38,15 @@ export const handler = async() => {
     });
 
     console.log("Spot grid market: ", tx.spotGridMarketAddress);
+    console.log("Phoenix market: ", rootSdk.PHOENIX_SOL_USDC_MAINNET);
+    console.log("Spot grid market key: ", tx.spotGridMarketKey);
+    console.log("Owner: ", provider.wallet.publicKey);
+    console.log("Base token mint: ", rootSdk.WRAPPED_SOL_MAINNET);
+    console.log("Quote token mint: ", rootSdk.USDC_MAINNET);
+    console.log("Protocol fee per fill bps: ", 5);
+    console.log("Min order size in base lots: ", 250);
+    console.log("Min order spacing in ticks: ", 25);
+    
     console.log("Signature: ", result.signatures);
 }
 

@@ -49,7 +49,14 @@ export const handler = async() => {
       transactionInfos: tx.transactionInfos
     });
 
-    console.log("New spot grid position: ", tx.positionAddress);
+    console.log("New spot grid position");
+    console.log("Owner: ", provider.wallet.publicKey);
+    console.log("Position address: ", tx.positionAddress);
+    console.log("Position key: ", tx.positionKey);
+    console.log("Spot Grid market address: ", SPOT_GRID_MARKET_ADDRESS);
+    console.log("Trade manager address: ", tx.tradeManagerAddress);
+    console.log("Seat: ", tx.seat);
+    
     console.log("Parameters");
     console.log(`Mode: ${args.mode}`);
     console.log(`Number of grids: ${args.numGrids.toString()}`);
