@@ -21,7 +21,7 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("AhLBwmRHw4WJyuGbjSx63Bt28zZtrdHKUArYBQAJBA7q");
+    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2JcRS6Sq8TkrPZr3DDff6gjvovGcJU13K4pQDi8fAW73");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
@@ -31,9 +31,9 @@ export const handler = async() => {
         arithmetic: {}
       },
       numGrids: new anchor.BN(5),
-      minPriceInTicks: new anchor.BN(95000),
-      maxPriceInTicks: new anchor.BN(105000),
-      orderSizeInBaseLots: new anchor.BN(250),
+      minPriceInTicks: new anchor.BN(96000),
+      maxPriceInTicks: new anchor.BN(96250),
+      orderSizeInBaseLots: new anchor.BN(100),
     } as rootSdk.PositionArgs;
 
     let tx = await rootSdk.createPosition({

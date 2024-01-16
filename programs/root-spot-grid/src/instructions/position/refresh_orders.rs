@@ -102,40 +102,44 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     for (k, v) in fill_map.iter_mut() {
         let order = *v;
         if order.is_bid {
-            msg!("Evaluating bid: {}", order.order_sequence_number);
-            let counter_fill_price = order.price_in_ticks + spacing_per_order_in_ticks;
-            msg!("Counter fill price: {}", counter_fill_price);
-            if counter_fill_price > current_market_price {
-                if !active_prices_map.contains(&counter_fill_price) {
-                    msg!("Can counter fill with an ask");
-                    asks.push(CondensedOrder {
-                        price_in_ticks: counter_fill_price,
-                        size_in_base_lots: order.size_in_base_lots,
-                        last_valid_slot: None,
-                        last_valid_unix_timestamp_in_seconds: None
-                    });
-                    
-                    active_prices_map.insert(counter_fill_price);
-                    ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
+            if order.order_sequence_number > 0 {
+                msg!("Evaluating bid: {}", order.order_sequence_number);
+                let counter_fill_price = order.price_in_ticks + spacing_per_order_in_ticks;
+                msg!("Counter fill price: {}", counter_fill_price);
+                if counter_fill_price > current_market_price {
+                    if !active_prices_map.contains(&counter_fill_price) {
+                        msg!("Can counter fill with an ask");
+                        asks.push(CondensedOrder {
+                            price_in_ticks: counter_fill_price,
+                            size_in_base_lots: order.size_in_base_lots,
+                            last_valid_slot: None,
+                            last_valid_unix_timestamp_in_seconds: None
+                        });
+                        
+                        active_prices_map.insert(counter_fill_price);
+                        ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
+                    }
                 }
             }
         }
         else {
-            msg!("Evaluating ask: {}", order.order_sequence_number);
-            let counter_fill_price = order.price_in_ticks - spacing_per_order_in_ticks;
-            msg!("Counter fill price: {}", counter_fill_price);
-            if counter_fill_price < current_market_price {
-                if !active_prices_map.contains(&counter_fill_price) {
-                    msg!("Can counter fill with a bid");
-                    bids.push(CondensedOrder {
-                        price_in_ticks: counter_fill_price,
-                        size_in_base_lots: order.size_in_base_lots,
-                        last_valid_slot: None,
-                        last_valid_unix_timestamp_in_seconds: None
-                    });
-                    
-                    active_prices_map.insert(counter_fill_price);
-                    ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
+            if order.order_sequence_number > 0 {
+                msg!("Evaluating ask: {}", order.order_sequence_number);
+                let counter_fill_price = order.price_in_ticks - spacing_per_order_in_ticks;
+                msg!("Counter fill price: {}", counter_fill_price);
+                if counter_fill_price < current_market_price {
+                    if !active_prices_map.contains(&counter_fill_price) {
+                        msg!("Can counter fill with a bid");
+                        bids.push(CondensedOrder {
+                            price_in_ticks: counter_fill_price,
+                            size_in_base_lots: order.size_in_base_lots,
+                            last_valid_slot: None,
+                            last_valid_unix_timestamp_in_seconds: None
+                        });
+                        
+                        active_prices_map.insert(counter_fill_price);
+                        ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
+                    }
                 }
             }
         }
@@ -218,11 +222,12 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
     msg!("seat_approval_status set to: {}", seat_approval_status);
 
+    drop(seat_account);
+    drop(market_data);
+
+
     if seat_approval_status == SeatApprovalStatus::NotApproved {
         msg!("Not approved so claiming a seat");
-
-        drop(seat_account);
-        drop(market_data);
 
         msg!("trade_manager: {}", ctx.accounts.trade_manager.key());
         msg!("log auth: {}", ctx.accounts.log_authority.key());

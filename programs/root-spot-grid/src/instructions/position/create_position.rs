@@ -118,6 +118,14 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
     }
 
+    msg!("Spot grid trading strategy");
+    msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
+    msg!("Position args: {:?}", args);
+    msg!("Generated bids: {:?}", bids);
+    msg!("Generated asks: {:?}", asks);
+    msg!("Base tokens to deposit: {:?}", base_token_amount);
+    msg!("Quote tokens to deposit: {:?}", quote_token_amount);
+
     // STEP 4 - Transfer the calculated amount to the trade_manager
 
     anchor_spl::token::transfer(
@@ -158,14 +166,6 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
             ctx.accounts.trade_manager.to_account_info(),
         ],
     )?;
-
-    msg!("Spot grid trading strategy");
-    msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
-    msg!("Position args: {:?}", args);
-    msg!("Generated bids: {:?}", bids);
-    msg!("Generated asks: {:?}", asks);
-    msg!("Base tokens to deposit: {:?}", base_token_amount);
-    msg!("Quote tokens to deposit: {:?}", quote_token_amount);
 
     // STEP 6 - Prepare signer seeds for the next CPI calls
 
