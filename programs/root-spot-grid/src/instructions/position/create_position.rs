@@ -4,8 +4,7 @@ use anchor_lang::{
     solana_program::program::{invoke, invoke_signed},
 };
 use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
-use phoenix::program::new_order::{ FailedMultipleLimitOrderBehavior, MultipleOrderPacket,
-};
+use phoenix::program::new_order::{FailedMultipleLimitOrderBehavior, MultipleOrderPacket};
 use phoenix::program::status::SeatApprovalStatus;
 use phoenix::program::{MarketHeader, Seat};
 use phoenix::quantities::WrapperU64;
@@ -15,7 +14,7 @@ use phoenix::state::Side;
 use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
-use crate::utils::{ load_header, parse_order_ids_from_return_data, generate_default_grid};
+use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data};
 
 pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
@@ -347,7 +346,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         fee_growth_base: 0,
         fee_growth_quote: 0,
         active_orders: orders_params,
-        pending_fills: [OrderParams::default(); MAX_GRIDS_PER_POSITION]
+        pending_fills: [OrderParams::default(); MAX_GRIDS_PER_POSITION],
     };
 
     Ok(())

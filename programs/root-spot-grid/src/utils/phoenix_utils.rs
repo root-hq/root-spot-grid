@@ -87,7 +87,7 @@ pub fn get_best_bid_and_ask(
 pub fn generate_default_grid(
     market_state: &dyn Market<Pubkey, FIFOOrderId, FIFORestingOrder, OrderPacket>,
     order_tuples: Vec<(u64, u64)>,
-    order_size_in_base_lots: u64
+    order_size_in_base_lots: u64,
 ) -> (Vec<CondensedOrder>, Vec<CondensedOrder>) {
     let mut bids: Vec<CondensedOrder> = vec![];
     let mut asks: Vec<CondensedOrder> = vec![];

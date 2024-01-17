@@ -1,25 +1,32 @@
 use std::collections::{HashMap, HashSet};
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, TokenAccount, Token};
-use phoenix::program::{MarketHeader, Seat};
-use phoenix::program::new_order::{CondensedOrder, MultipleOrderPacket, FailedMultipleLimitOrderBehavior};
-use phoenix::program::status::SeatApprovalStatus;
-use phoenix::state::Side;
-use phoenix::state::markets::FIFOOrderId;
 use anchor_lang::{
     __private::bytemuck::{self},
     solana_program::program::invoke_signed,
 };
+use anchor_spl::token::{Mint, Token, TokenAccount};
+use phoenix::program::new_order::{
+    CondensedOrder, FailedMultipleLimitOrderBehavior, MultipleOrderPacket,
+};
+use phoenix::program::status::SeatApprovalStatus;
+use phoenix::program::{MarketHeader, Seat};
+use phoenix::state::markets::FIFOOrderId;
 use phoenix::state::markets::OrderId;
+use phoenix::state::Side;
 
+use crate::constants::{
+    BASE_TOKEN_VAULT_SEED, MAX_GRIDS_PER_POSITION, POSITION_SEED, QUOTE_TOKEN_VAULT_SEED,
+    TRADE_MANAGER_SEED,
+};
 use crate::errors::SpotGridError;
-use crate::state::{Market, Position, OrderParams};
-use crate::constants::{TRADE_MANAGER_SEED, BASE_TOKEN_VAULT_SEED, QUOTE_TOKEN_VAULT_SEED, POSITION_SEED, MAX_GRIDS_PER_POSITION};
-use crate::utils::{load_header, generate_default_grid, get_best_bid_and_ask, parse_order_ids_from_return_data, get_order_index_in_buffer};
+use crate::state::{Market, OrderParams, Position};
+use crate::utils::{
+    generate_default_grid, get_best_bid_and_ask, get_order_index_in_buffer, load_header,
+    parse_order_ids_from_return_data,
+};
 
 pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
-
     let mut bids: Vec<CondensedOrder> = vec![];
     let mut asks: Vec<CondensedOrder> = vec![];
 
@@ -60,7 +67,8 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             side = Side::Ask;
         }
 
-        let order_id = FIFOOrderId::new_from_untyped(order.price_in_ticks, order.order_sequence_number);
+        let order_id =
+            FIFOOrderId::new_from_untyped(order.price_in_ticks, order.order_sequence_number);
 
         if market_state.get_book(side).get(&order_id).is_none() {
             // Order is fully filled.
@@ -75,15 +83,21 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     // STEP 3 - Populate the pending_fills buffer. Need to do this if the fill cannot
     // be counter-filled in the current iteration due to some reason
 
-    for (k,v) in fill_map.iter() {
+    for (k, v) in fill_map.iter() {
         ctx.accounts.position.pending_fills[*k as usize] = *v;
     }
-    msg!("Pending fills buffer: {:?}", ctx.accounts.position.pending_fills);
+    msg!(
+        "Pending fills buffer: {:?}",
+        ctx.accounts.position.pending_fills
+    );
 
-    // STEP 4 - Initialize the bid/ask vectors starting with pending_fills. We keep track of all the new 
+    // STEP 4 - Initialize the bid/ask vectors starting with pending_fills. We keep track of all the new
     // counter-fill prices using active_price_map so that a situation like bid/ask at the same price does not occur
 
-    let spacing_per_order_in_ticks = ctx.accounts.position.position_args
+    let spacing_per_order_in_ticks = ctx
+        .accounts
+        .position
+        .position_args
         .max_price_in_ticks
         .checked_sub(ctx.accounts.position.position_args.min_price_in_ticks)
         .unwrap()
@@ -113,16 +127,15 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             price_in_ticks: counter_fill_price,
                             size_in_base_lots: order.size_in_base_lots,
                             last_valid_slot: None,
-                            last_valid_unix_timestamp_in_seconds: None
+                            last_valid_unix_timestamp_in_seconds: None,
                         });
-                        
+
                         active_prices_map.insert(counter_fill_price);
                         ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
                     }
                 }
             }
-        }
-        else {
+        } else {
             if order.order_sequence_number > 0 {
                 msg!("Evaluating ask: {}", order.order_sequence_number);
                 let counter_fill_price = order.price_in_ticks - spacing_per_order_in_ticks;
@@ -134,9 +147,9 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             price_in_ticks: counter_fill_price,
                             size_in_base_lots: order.size_in_base_lots,
                             last_valid_slot: None,
-                            last_valid_unix_timestamp_in_seconds: None
+                            last_valid_unix_timestamp_in_seconds: None,
                         });
-                        
+
                         active_prices_map.insert(counter_fill_price);
                         ctx.accounts.position.pending_fills[*k as usize] = OrderParams::default();
                     }
@@ -152,7 +165,8 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         msg!("There were zero active orders before. Maybe it was paused");
         let mut order_tuples: Vec<(u64, u64)> = vec![];
         let mut left_price_tracker = ctx.accounts.position.position_args.min_price_in_ticks;
-        let mut right_price_tracker = ctx.accounts.position.position_args.min_price_in_ticks + spacing_per_order_in_ticks;
+        let mut right_price_tracker =
+            ctx.accounts.position.position_args.min_price_in_ticks + spacing_per_order_in_ticks;
 
         while right_price_tracker <= ctx.accounts.position.position_args.max_price_in_ticks {
             order_tuples.push((left_price_tracker, right_price_tracker));
@@ -160,7 +174,11 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             right_price_tracker += spacing_per_order_in_ticks;
         }
 
-        let (default_bids, default_asks) = generate_default_grid(market_state, order_tuples, ctx.accounts.position.position_args.order_size_in_base_lots);
+        let (default_bids, default_asks) = generate_default_grid(
+            market_state,
+            order_tuples,
+            ctx.accounts.position.position_args.order_size_in_base_lots,
+        );
 
         let mut index_counter = 0;
         for bid in default_bids {
@@ -224,7 +242,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
     drop(seat_account);
     drop(market_data);
-
 
     if seat_approval_status == SeatApprovalStatus::NotApproved {
         msg!("Not approved so claiming a seat");
@@ -324,11 +341,20 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                         let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
-                            size_in_base_lots: ctx.accounts.position.position_args.order_size_in_base_lots,
+                            size_in_base_lots: ctx
+                                .accounts
+                                .position
+                                .position_args
+                                .order_size_in_base_lots,
                             is_bid: false,
                             is_null: false,
                         };
-                        let index = get_order_index_in_buffer(order_param, ctx.accounts.position.position_args, spacing_per_order_in_ticks, MAX_GRIDS_PER_POSITION as i32);
+                        let index = get_order_index_in_buffer(
+                            order_param,
+                            ctx.accounts.position.position_args,
+                            spacing_per_order_in_ticks,
+                            MAX_GRIDS_PER_POSITION as i32,
+                        );
                         ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Ask order could not be placed"));
@@ -341,11 +367,20 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                         let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
-                            size_in_base_lots: ctx.accounts.position.position_args.order_size_in_base_lots,
+                            size_in_base_lots: ctx
+                                .accounts
+                                .position
+                                .position_args
+                                .order_size_in_base_lots,
                             is_bid: true,
                             is_null: false,
                         };
-                        let index = get_order_index_in_buffer(order_param, ctx.accounts.position.position_args, spacing_per_order_in_ticks, MAX_GRIDS_PER_POSITION as i32);
+                        let index = get_order_index_in_buffer(
+                            order_param,
+                            ctx.accounts.position.position_args,
+                            spacing_per_order_in_ticks,
+                            MAX_GRIDS_PER_POSITION as i32,
+                        );
                         ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Bid order could not be placed"));
@@ -354,7 +389,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     }
 
     msg!("Order params: {:?}", orders_params);
-    
 
     Ok(())
 }
@@ -388,7 +422,7 @@ pub struct RefreshOrders<'info> {
     )]
     /// CHECK: No constraint needed
     pub trade_manager: UncheckedAccount<'info>,
-    
+
     /// CHECK: Checked in CPI
     pub log_authority: UncheckedAccount<'info>,
 
@@ -417,7 +451,7 @@ pub struct RefreshOrders<'info> {
         bump = position.bump,
     )]
     pub position: Box<Account<'info, Position>>,
-    
+
     #[account(
         mut,
         seeds = [BASE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
