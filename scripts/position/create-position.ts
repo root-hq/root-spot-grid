@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import * as rootSdk from "../../sdk";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
+import axios from "axios";
 
 require("dotenv").config();
 
@@ -26,14 +27,19 @@ export const handler = async() => {
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
+    let NUM_GRIDS = new anchor.BN(5);
+    let MIN_PRICE_IN_TICKS = new anchor.BN(100000);
+    let MAX_PRICE_IN_TICKS = new anchor.BN(100200);
+    let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
+
     let args = {
       mode: {
         arithmetic: {}
       },
-      numGrids: new anchor.BN(5),
-      minPriceInTicks: new anchor.BN(96000),
-      maxPriceInTicks: new anchor.BN(96250),
-      orderSizeInBaseLots: new anchor.BN(100),
+      numGrids: NUM_GRIDS,
+      minPriceInTicks: MIN_PRICE_IN_TICKS,
+      maxPriceInTicks: MAX_PRICE_IN_TICKS,
+      orderSizeInBaseLots: ORDER_SIZE_IN_BASE_LOTS,
     } as rootSdk.PositionArgs;
 
     let tx = await rootSdk.createPosition({
@@ -63,8 +69,29 @@ export const handler = async() => {
     console.log(`Minimum price in ticks: ${args.minPriceInTicks}`);
     console.log(`Maximum price in ticks: ${args.maxPriceInTicks}`);
     console.log(`Order size in base lots: ${args.orderSizeInBaseLots}`);
-    
-    console.log("Signature: ", result.signatures);
+    await result.confirm();
+
+    console.log("Signature: https://solscan.io/tx/", result.signatures[0]);
+
+
+    const URL = `https://spot-grid-db-utils.vercel.app/api/`;
+    const data = {
+      "owner": provider.wallet.publicKey,
+      "position_address": tx.positionAddress,
+      "position_key": tx.positionKey,
+      "spot_grid_market_address": SPOT_GRID_MARKET_ADDRESS,
+      "trade_manager_address": tx.tradeManagerAddress,
+      "seat": tx.seat,
+      "mode": "Arithmetic",
+      "num_grids": NUM_GRIDS,
+      "min_price_in_ticks": MIN_PRICE_IN_TICKS,
+      "max_price_in_ticks": MAX_PRICE_IN_TICKS,
+      "order_size_in_base_lots": ORDER_SIZE_IN_BASE_LOTS,
+    }
+
+    const allMarkets = await axios.post(URL + `position/add-position`, data);
+    console.log("Response: ", allMarkets);
+
 }
 
 handler();

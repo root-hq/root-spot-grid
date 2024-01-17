@@ -50,7 +50,7 @@ export const cancelOrdersAndClosePosition = async({
     
     const transaction = new anchor.web3.Transaction();
 
-    const additionalUnitsIx = requestComputeUnits(1_400_000, 1);
+    const additionalUnitsIx = requestComputeUnits(1_400_000, 100);
     transaction.add(...additionalUnitsIx);
 
     try {

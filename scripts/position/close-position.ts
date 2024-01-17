@@ -22,7 +22,7 @@ export const handler = async() => {
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
     const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2JcRS6Sq8TkrPZr3DDff6gjvovGcJU13K4pQDi8fAW73");
-    const POSITION_ADDRESS = new anchor.web3.PublicKey("D37qNTWgJn3tsK6XTx9aNX3ibL5gCxKpRBLHznvrAaDm");
+    const POSITION_ADDRESS = new anchor.web3.PublicKey("CQ4aukCheMhyo4PxQzkbqGgtKfy61Tkk5kjjJN8sy83d");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
@@ -42,6 +42,7 @@ export const handler = async() => {
       provider,
       transactionInfos: tx.transactionInfos
     });
+    await result.confirm();
 
     console.log("Position closed: ", POSITION_ADDRESS);
     console.log("Expected withdrawal base: ", baseBalance);
