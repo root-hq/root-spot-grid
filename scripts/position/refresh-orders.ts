@@ -22,24 +22,30 @@ export const handler = async() => {
 
     const POSITION_ADDRESS = new anchor.web3.PublicKey("CcoGfopoRwy4LuWCU8qhPhk8L4vnioa7diNsM4UpBCFc");
 
-    try {
-      let tx = await rootSdk.refreshOrders({
-        provider,
-        positionAddress: POSITION_ADDRESS
-      });
-  
-      let result = await rootSdk.executeTransactions({
-        provider,
-        transactionInfos: tx.transactionInfos
-      });
-      await result.confirm();
-  
-      console.log("Position refreshed: ", tx.positionAddress);
-      
-      console.log("Signature: ", result.signatures);  
-    }
-    catch(err) {
-      console.log("Error refreshing: ", err);
+    let counter = 25;
+
+    while(counter > 0) {
+      try {
+        let tx = await rootSdk.refreshOrders({
+          provider,
+          positionAddress: POSITION_ADDRESS
+        });
+    
+        let result = await rootSdk.executeTransactions({
+          provider,
+          transactionInfos: tx.transactionInfos
+        });
+        await result.confirm();
+    
+        console.log("Position refreshed: ", tx.positionAddress);
+        
+        console.log("Signature: ", result.signatures);
+        return true;
+      }
+      catch(err) {
+        console.log("Error refreshing: ", err);
+      }
+      counter--;
     }
 }
 
