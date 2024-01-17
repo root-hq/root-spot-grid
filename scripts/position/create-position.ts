@@ -28,8 +28,8 @@ export const handler = async() => {
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
     let NUM_GRIDS = new anchor.BN(6);
-    let MIN_PRICE_IN_TICKS = new anchor.BN(100000);
-    let MAX_PRICE_IN_TICKS = new anchor.BN(101000);
+    let MIN_PRICE_IN_TICKS = new anchor.BN(98500);
+    let MAX_PRICE_IN_TICKS = new anchor.BN(99500);
     let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
 
     let args = {

@@ -278,6 +278,14 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     // STEP 9 - Assign the position state to the PDA
     let mut orders_params = [OrderParams::default(); 15];
 
+    let new_args = PositionArgs {
+        mode: args.mode,
+        num_grids,
+        min_price_in_ticks: final_min_price_in_ticks,
+        max_price_in_ticks: final_max_price_in_ticks,
+        order_size_in_base_lots,
+    };
+
     parse_order_ids_from_return_data(&mut order_ids)?;
 
     let market_data = ctx.accounts.phoenix_market.data.borrow();
@@ -308,7 +316,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                         msg!("Ask {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
                         let index = get_order_index_in_buffer(
                             order_param,
-                            args,
+                            new_args,
                             spacing_per_order_in_ticks
                         );
                         orders_params[index as usize] = order_param;
@@ -330,7 +338,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                         msg!("Bid {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
                         let index = get_order_index_in_buffer(
                             order_param,
-                            ctx.accounts.position.position_args,
+                            new_args,
                             spacing_per_order_in_ticks,
                         );
                         orders_params[index as usize] = order_param;
@@ -348,13 +356,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         market: ctx.accounts.spot_grid_market.key(),
         owner: ctx.accounts.creator.key(),
         trade_manager: ctx.accounts.trade_manager.key(),
-        position_args: PositionArgs {
-            mode: args.mode,
-            num_grids,
-            min_price_in_ticks: final_min_price_in_ticks,
-            max_price_in_ticks: final_max_price_in_ticks,
-            order_size_in_base_lots,
-        },
+        position_args: new_args,
         fee_growth_base: 0,
         fee_growth_quote: 0,
         active_orders: orders_params,
