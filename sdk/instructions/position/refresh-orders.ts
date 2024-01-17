@@ -50,7 +50,7 @@ export const refreshOrders = async({
     
     const transaction = new anchor.web3.Transaction();
 
-    const additionalUnitsIx = requestComputeUnits(1_400_000, 1);
+    const additionalUnitsIx = requestComputeUnits(1_400_000, 1000);
     transaction.add(...additionalUnitsIx);
 
     try {

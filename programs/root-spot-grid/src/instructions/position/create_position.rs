@@ -14,7 +14,7 @@ use phoenix::state::Side;
 use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
-use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data};
+use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data, get_order_index_in_buffer};
 
 pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
@@ -290,7 +290,6 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
             })?
             .inner;
 
-    let mut counter = 0;
     for order_id in order_ids.iter() {
         let side = Side::from_order_sequence_number(order_id.order_sequence_number);
         match side {
@@ -299,13 +298,20 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                     .get_book(Side::Ask)
                     .get(&order_id)
                     .map(|_| {
-                        orders_params[counter] = OrderParams {
+                        let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: order_size_in_base_lots,
                             is_bid: false,
                             is_null: false,
                         };
+                        msg!("Ask {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
+                        let index = get_order_index_in_buffer(
+                            order_param,
+                            args,
+                            spacing_per_order_in_ticks
+                        );
+                        orders_params[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Ask order could not be placed"));
             }
@@ -314,18 +320,24 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                     .get_book(Side::Bid)
                     .get(&order_id)
                     .map(|_| {
-                        orders_params[counter] = OrderParams {
+                        let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: order_size_in_base_lots,
                             is_bid: true,
                             is_null: false,
                         };
+                        msg!("Bid {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
+                        let index = get_order_index_in_buffer(
+                            order_param,
+                            ctx.accounts.position.position_args,
+                            spacing_per_order_in_ticks,
+                        );
+                        orders_params[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Bid order could not be placed"));
             }
         }
-        counter += 1;
     }
 
     msg!("Order params: {:?}", orders_params);

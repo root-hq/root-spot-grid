@@ -16,7 +16,7 @@ use phoenix::state::markets::OrderId;
 use phoenix::state::Side;
 
 use crate::constants::{
-    BASE_TOKEN_VAULT_SEED, MAX_GRIDS_PER_POSITION, POSITION_SEED, QUOTE_TOKEN_VAULT_SEED,
+    BASE_TOKEN_VAULT_SEED, POSITION_SEED, QUOTE_TOKEN_VAULT_SEED,
     TRADE_MANAGER_SEED,
 };
 use crate::errors::SpotGridError;
@@ -316,8 +316,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     )?;
 
     // STEP 9 - Assign the position state to the PDA
-    let orders_params = [OrderParams::default(); 15];
-
     parse_order_ids_from_return_data(&mut order_ids)?;
 
     let market_data = ctx.accounts.phoenix_market.data.borrow();
@@ -349,11 +347,11 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             is_bid: false,
                             is_null: false,
                         };
+                        msg!("Ask {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
                         let index = get_order_index_in_buffer(
                             order_param,
                             ctx.accounts.position.position_args,
-                            spacing_per_order_in_ticks,
-                            MAX_GRIDS_PER_POSITION as i32,
+                            spacing_per_order_in_ticks
                         );
                         ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
@@ -375,11 +373,11 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             is_bid: true,
                             is_null: false,
                         };
+                        msg!("Bid {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
                         let index = get_order_index_in_buffer(
                             order_param,
                             ctx.accounts.position.position_args,
                             spacing_per_order_in_ticks,
-                            MAX_GRIDS_PER_POSITION as i32,
                         );
                         ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
@@ -388,7 +386,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         }
     }
 
-    msg!("Order params: {:?}", orders_params);
+    msg!("Order params: {:?}", ctx.accounts.position.active_orders);
 
     Ok(())
 }
