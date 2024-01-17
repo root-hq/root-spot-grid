@@ -15,8 +15,8 @@ use phoenix::state::markets::OrderId;
 
 use crate::errors::SpotGridError;
 use crate::state::{Market, Position, OrderParams};
-use crate::constants::{TRADE_MANAGER_SEED, BASE_TOKEN_VAULT_SEED, QUOTE_TOKEN_VAULT_SEED, POSITION_SEED};
-use crate::utils::{load_header, generate_default_grid, get_best_bid_and_ask, parse_order_ids_from_return_data};
+use crate::constants::{TRADE_MANAGER_SEED, BASE_TOKEN_VAULT_SEED, QUOTE_TOKEN_VAULT_SEED, POSITION_SEED, MAX_GRIDS_PER_POSITION};
+use crate::utils::{load_header, generate_default_grid, get_best_bid_and_ask, parse_order_ids_from_return_data, get_order_index_in_buffer};
 
 pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
@@ -299,7 +299,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     )?;
 
     // STEP 9 - Assign the position state to the PDA
-    let mut orders_params = [OrderParams::default(); 15];
+    let orders_params = [OrderParams::default(); 15];
 
     parse_order_ids_from_return_data(&mut order_ids)?;
 
@@ -313,7 +313,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             })?
             .inner;
 
-    let mut counter = 0;
     for order_id in order_ids.iter() {
         let side = Side::from_order_sequence_number(order_id.order_sequence_number);
         match side {
@@ -322,13 +321,15 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                     .get_book(Side::Ask)
                     .get(&order_id)
                     .map(|_| {
-                        orders_params[counter] = OrderParams {
+                        let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: ctx.accounts.position.position_args.order_size_in_base_lots,
                             is_bid: false,
                             is_null: false,
                         };
+                        let index = get_order_index_in_buffer(order_param, ctx.accounts.position.position_args, spacing_per_order_in_ticks, MAX_GRIDS_PER_POSITION as i32);
+                        ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Ask order could not be placed"));
             }
@@ -337,23 +338,22 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                     .get_book(Side::Bid)
                     .get(&order_id)
                     .map(|_| {
-                        orders_params[counter] = OrderParams {
+                        let order_param = OrderParams {
                             price_in_ticks: order_id.price_in_ticks(),
                             order_sequence_number: order_id.order_sequence_number,
                             size_in_base_lots: ctx.accounts.position.position_args.order_size_in_base_lots,
                             is_bid: true,
                             is_null: false,
                         };
+                        let index = get_order_index_in_buffer(order_param, ctx.accounts.position.position_args, spacing_per_order_in_ticks, MAX_GRIDS_PER_POSITION as i32);
+                        ctx.accounts.position.active_orders[index as usize] = order_param;
                     })
                     .unwrap_or_else(|| msg!("Bid order could not be placed"));
             }
         }
-        counter += 1;
     }
 
     msg!("Order params: {:?}", orders_params);
-
-    ctx.accounts.position.active_orders = orders_params;
     
 
     Ok(())
