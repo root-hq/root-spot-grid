@@ -22,7 +22,7 @@ export const handler = async() => {
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
     const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2JcRS6Sq8TkrPZr3DDff6gjvovGcJU13K4pQDi8fAW73");
-    const POSITION_ADDRESS = new anchor.web3.PublicKey("HFKcjRWecL2srZBKx5i5fHKEz65oJAKyvmD76JNjv4eB");
+    const POSITION_ADDRESS = new anchor.web3.PublicKey("FuB3a1HH8cDGtZipGAzQgmKwpA1C1cWJoVzjBtsMQHau");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
@@ -30,25 +30,36 @@ export const handler = async() => {
     let baseBalance = (await connection.getTokenAccountBalance(baseTokenUserAc)).value.uiAmount;
     let quoteBalance = (await connection.getTokenAccountBalance(quoteTokenUserAc)).value.uiAmount;
 
-    let tx = await rootSdk.cancelOrdersAndClosePosition({
-      provider,
-      spotGridMarketAddress: SPOT_GRID_MARKET_ADDRESS,
-      positionAddress: POSITION_ADDRESS,
-      baseTokenUserAc,
-      quoteTokenUserAc,
-    });
+    let counter = 25;
 
-    let result = await rootSdk.executeTransactions({
-      provider,
-      transactionInfos: tx.transactionInfos
-    });
-    await result.confirm();
-
-    console.log("Position closed: ", POSITION_ADDRESS);
-    console.log("Expected withdrawal base: ", baseBalance);
-    console.log("Expected withdrawal quote: ", quoteBalance);
+    while(counter > 0) {
+      try {
+        let tx = await rootSdk.cancelOrdersAndClosePosition({
+          provider,
+          spotGridMarketAddress: SPOT_GRID_MARKET_ADDRESS,
+          positionAddress: POSITION_ADDRESS,
+          baseTokenUserAc,
+          quoteTokenUserAc,
+        });
     
-    console.log("Signature: ", result.signatures);
+        let result = await rootSdk.executeTransactions({
+          provider,
+          transactionInfos: tx.transactionInfos
+        });
+        await result.confirm();
+    
+        console.log("Position closed: ", POSITION_ADDRESS);
+        console.log("Expected withdrawal base: ", baseBalance);
+        console.log("Expected withdrawal quote: ", quoteBalance);
+        
+        console.log("Signature: ", result.signatures);
+        return true;
+      }
+      catch(err) {
+        console.log("Error: ", err);
+      }
+      counter--;
+    }
 }
 
 handler();

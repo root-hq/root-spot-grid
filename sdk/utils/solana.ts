@@ -103,6 +103,7 @@ export const executeTransactions = async ({
         async (tx) =>
           await provider.connection.sendRawTransaction(tx.serialize(), {
             preflightCommitment: "processed",
+            maxRetries: 5
           })
       )
     );
