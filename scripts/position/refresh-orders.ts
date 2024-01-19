@@ -20,7 +20,7 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const POSITION_ADDRESS = new anchor.web3.PublicKey("FuB3a1HH8cDGtZipGAzQgmKwpA1C1cWJoVzjBtsMQHau");
+    const POSITION_ADDRESS = new anchor.web3.PublicKey("4vWfMWrxxoxiVceDWCZfXeQr1AbUHc3NVf7HGZjUSsxs");
 
     let counter = 25;
 

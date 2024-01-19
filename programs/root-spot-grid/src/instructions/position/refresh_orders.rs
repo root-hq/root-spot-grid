@@ -11,6 +11,7 @@ use phoenix::program::new_order::{
 };
 use phoenix::program::status::SeatApprovalStatus;
 use phoenix::program::{MarketHeader, Seat};
+use phoenix::quantities::WrapperU64;
 use phoenix::state::markets::FIFOOrderId;
 use phoenix::state::markets::OrderId;
 use phoenix::state::Side;
@@ -65,6 +66,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     let mut quote_token_fee_amount = 0u64;
 
     let fee_bps = ctx.accounts.spot_grid_market.protocol_fee_per_fill_bps;
+    let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
 
     for order in ctx.accounts.position.active_orders {
         let mut side = Side::Bid;
@@ -83,7 +85,8 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
             if side == Side::Bid {
                 // Collect fee in base asset
-                base_token_fee_amount += order.size_in_base_lots.checked_mul(fee_bps as u64).unwrap()
+                let base_atoms_earned = order.size_in_base_lots.checked_mul(base_atoms_per_base_lot).unwrap();
+                base_token_fee_amount += base_atoms_earned.checked_mul(fee_bps as u64).unwrap()
                     .checked_div(MAX_BASIS_POINTS).unwrap();
             }
             else if side == Side::Ask {

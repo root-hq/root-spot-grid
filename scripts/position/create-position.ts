@@ -27,9 +27,9 @@ export const handler = async() => {
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
-    let NUM_GRIDS = new anchor.BN(5);
-    let MIN_PRICE_IN_TICKS = new anchor.BN(100000);
-    let MAX_PRICE_IN_TICKS = new anchor.BN(101000);
+    let NUM_GRIDS = new anchor.BN(6);
+    let MIN_PRICE_IN_TICKS = new anchor.BN(93000);
+    let MAX_PRICE_IN_TICKS = new anchor.BN(95000);
     let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
 
     let args = {
