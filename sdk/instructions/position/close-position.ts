@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
-import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getPositionAddress, getQuoteTokenVaultAddress, getRootProgram, getTradeManagerAddress, requestComputeUnits } from "../../utils";
-import { Market, Position, PositionArgs } from "../../types";
+import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getQuoteTokenVaultAddress, getRootProgram, getTradeManagerAddress, requestComputeUnits } from "../../utils";
+import { Market, Position } from "../../types";
 import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
-import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 export interface ClosePositionArgs extends WriteActionArgs {
     spotGridMarketAddress: anchor.web3.PublicKey;
@@ -34,6 +34,10 @@ export const closePosition = async({
     
     const baseTokenVaultAc = getBaseTokenVaultAddress(positionAddress);
     const quoteTokenVaultAc = getQuoteTokenVaultAddress(positionAddress);
+
+    const baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, market.protocolFeeRecipient);
+    const quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, market.protocolFeeRecipient);
+
     const tradeManager = getTradeManagerAddress(positionAddress);
 
     const phoenixClient = await Phoenix.Client.createWithMarketAddresses(
@@ -68,7 +72,9 @@ export const closePosition = async({
                 baseTokenUserAc,
                 quoteTokenUserAc,
                 baseTokenVaultAc,
-                quoteTokenVaultAc
+                quoteTokenVaultAc,
+                baseTokenFeeAc,
+                quoteTokenFeeAc
             })
             .instruction();
 

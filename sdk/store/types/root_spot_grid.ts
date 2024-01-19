@@ -319,6 +319,11 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "protocolFeeRecipient",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tradeManager",
           "isMut": true,
           "isSigner": false
@@ -330,6 +335,11 @@ export type RootSpotGrid = {
         },
         {
           "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spotGridMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -355,6 +365,16 @@ export type RootSpotGrid = {
         },
         {
           "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenFeeAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenFeeAc",
           "isMut": true,
           "isSigner": false
         },
@@ -541,7 +561,7 @@ export type RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "market",
+            "name": "spotGridMarket",
             "type": "publicKey"
           },
           {
@@ -1047,6 +1067,11 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
+          "name": "protocolFeeRecipient",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tradeManager",
           "isMut": true,
           "isSigner": false
@@ -1058,6 +1083,11 @@ export const IDL: RootSpotGrid = {
         },
         {
           "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spotGridMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -1083,6 +1113,16 @@ export const IDL: RootSpotGrid = {
         },
         {
           "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenFeeAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenFeeAc",
           "isMut": true,
           "isSigner": false
         },
@@ -1269,7 +1309,7 @@ export const IDL: RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "market",
+            "name": "spotGridMarket",
             "type": "publicKey"
           },
           {

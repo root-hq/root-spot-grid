@@ -1,4 +1,4 @@
-use crate::constants::*;
+use crate::{constants::*, Market};
 use crate::errors::SpotGridError;
 use crate::state::Position;
 use anchor_lang::prelude::*;
@@ -84,6 +84,9 @@ pub struct ClosePosition<'info> {
     /// CHECK: No constraint needed
     pub position_key: UncheckedAccount<'info>,
 
+    /// CHECK: No constraint needed
+    pub protocol_fee_recipient: UncheckedAccount<'info>,
+
     #[account(
         mut,
         seeds = [
@@ -100,12 +103,21 @@ pub struct ClosePosition<'info> {
     pub quote_token_mint: Box<Account<'info, Mint>>,
 
     #[account(
+        has_one = phoenix_market,
+        has_one = base_token_mint,
+        has_one = quote_token_mint,
+        has_one = protocol_fee_recipient
+    )]
+    pub spot_grid_market: Box<Account<'info, Market>>,
+
+    #[account(
         mut,
         seeds = [
             POSITION_SEED.as_bytes(),
             position_key.key().as_ref()
         ],
         bump = position.bump,
+        has_one = spot_grid_market,
         close = creator
     )]
     pub position: Box<Account<'info, Position>>,
@@ -137,6 +149,20 @@ pub struct ClosePosition<'info> {
         token::authority = trade_manager
     )]
     pub quote_token_vault_ac: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        token::mint = base_token_mint,
+        token::authority = protocol_fee_recipient
+    )]
+    pub base_token_fee_ac: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        token::mint = quote_token_mint,
+        token::authority = protocol_fee_recipient
+    )]
+    pub quote_token_fee_ac: Box<Account<'info, TokenAccount>>,
 
     pub system_program: Program<'info, System>,
 

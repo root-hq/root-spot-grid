@@ -56,7 +56,7 @@ impl PositionArgs {
 pub struct Position {
     pub bump: u8,
     pub position_key: Pubkey,
-    pub market: Pubkey,
+    pub spot_grid_market: Pubkey,
     pub owner: Pubkey,
     pub trade_manager: Pubkey,
 

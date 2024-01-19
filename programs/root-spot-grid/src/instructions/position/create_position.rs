@@ -347,7 +347,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
         position_key: ctx.accounts.position_key.key(),
-        market: ctx.accounts.spot_grid_market.key(),
+        spot_grid_market: ctx.accounts.spot_grid_market.key(),
         owner: ctx.accounts.creator.key(),
         trade_manager: ctx.accounts.trade_manager.key(),
         position_args: new_args,

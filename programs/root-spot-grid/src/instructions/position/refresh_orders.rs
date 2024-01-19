@@ -454,6 +454,7 @@ pub struct RefreshOrders<'info> {
             position_key.key().as_ref()
         ],
         bump = position.bump,
+        has_one = spot_grid_market
     )]
     pub position: Box<Account<'info, Position>>,
 

@@ -319,6 +319,11 @@
           "isSigner": false
         },
         {
+          "name": "protocolFeeRecipient",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tradeManager",
           "isMut": true,
           "isSigner": false
@@ -330,6 +335,11 @@
         },
         {
           "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spotGridMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -355,6 +365,16 @@
         },
         {
           "name": "quoteTokenVaultAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "baseTokenFeeAc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenFeeAc",
           "isMut": true,
           "isSigner": false
         },
@@ -541,7 +561,7 @@
             "type": "publicKey"
           },
           {
-            "name": "market",
+            "name": "spotGridMarket",
             "type": "publicKey"
           },
           {
