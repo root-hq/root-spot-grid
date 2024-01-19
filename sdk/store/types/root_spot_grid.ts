@@ -371,12 +371,12 @@ export type RootSpotGrid = {
         {
           "name": "baseTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "quoteTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -1119,12 +1119,12 @@ export const IDL: RootSpotGrid = {
         {
           "name": "baseTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "quoteTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",

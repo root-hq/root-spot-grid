@@ -151,16 +151,14 @@ pub struct ClosePosition<'info> {
     pub quote_token_vault_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        init_if_needed,
-        payer = creator,
+        mut,
         token::mint = base_token_mint,
         token::authority = protocol_fee_recipient
     )]
     pub base_token_fee_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        init_if_needed,
-        payer = creator,
+        mut,
         token::mint = quote_token_mint,
         token::authority = protocol_fee_recipient
     )]

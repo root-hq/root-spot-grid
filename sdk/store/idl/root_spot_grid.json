@@ -371,12 +371,12 @@
         {
           "name": "baseTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "quoteTokenFeeAc",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",

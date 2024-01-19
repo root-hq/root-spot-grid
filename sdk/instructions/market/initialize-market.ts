@@ -1,5 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { WriteActionArgs, WriteActionResult, getRootProgram, getSpotGridMarketAddress } from "../../utils";
+import { TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
+import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 export interface InitializeMarketArgs extends WriteActionArgs {
     phoenixMarket: anchor.web3.PublicKey;
@@ -34,7 +36,30 @@ export const initializeMarket = async({
 
     let spotGridMarketAddress = getSpotGridMarketAddress(phoenixMarket, spotGridMarketKeypair.publicKey);
 
+    let baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, protocolFeeRecipient, false);
+    let quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, protocolFeeRecipient, false);
+
+    let baseTokenAccountInitIx = createAssociatedTokenAccountInstruction(
+        provider.wallet.publicKey,
+        baseTokenFeeAc,
+        protocolFeeRecipient,
+        baseTokenMint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_PROGRAM_ID
+    );
+
+    let quoteTokeAccountInitIx = createAssociatedTokenAccountInstruction(
+        provider.wallet.publicKey,
+        quoteTokenFeeAc,
+        protocolFeeRecipient,
+        quoteTokenMint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_PROGRAM_ID
+    );
+
     const transaction = new anchor.web3.Transaction();
+    transaction.add(baseTokenAccountInitIx);
+    transaction.add(quoteTokeAccountInitIx);
 
     try {
         const ix = await rootProgram
