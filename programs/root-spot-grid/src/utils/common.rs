@@ -9,10 +9,10 @@ pub fn get_order_index_in_buffer(
     let max_price_in_ticks = position_args.max_price_in_ticks;
 
     let mut index = order
-            .price_in_ticks
-            .abs_diff(min_price_in_ticks)
-            .checked_div(spacing_in_ticks)
-            .unwrap() as i32;
+        .price_in_ticks
+        .abs_diff(min_price_in_ticks)
+        .checked_div(spacing_in_ticks)
+        .unwrap() as i32;
 
     if order.is_bid {
         assert!(order.price_in_ticks < max_price_in_ticks);

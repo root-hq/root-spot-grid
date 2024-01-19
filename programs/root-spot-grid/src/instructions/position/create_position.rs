@@ -14,7 +14,10 @@ use phoenix::state::Side;
 use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
-use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data, get_order_index_in_buffer, quote_atoms_from_base_lots_around_price};
+use crate::utils::{
+    generate_default_grid, get_order_index_in_buffer, load_header,
+    parse_order_ids_from_return_data, quote_atoms_from_base_lots_around_price,
+};
 
 pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
@@ -87,7 +90,12 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
 
     for bid in &bids {
-        let quote_atoms_needed = quote_atoms_from_base_lots_around_price(&ctx.accounts.phoenix_market, bid.price_in_ticks, bid.size_in_base_lots).unwrap_or(0); 
+        let quote_atoms_needed = quote_atoms_from_base_lots_around_price(
+            &ctx.accounts.phoenix_market,
+            bid.price_in_ticks,
+            bid.size_in_base_lots,
+        )
+        .unwrap_or(0);
         quote_token_amount += quote_atoms_needed;
     }
 
@@ -291,11 +299,15 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                             is_bid: false,
                             is_null: false,
                         };
-                        msg!("Ask {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
+                        msg!(
+                            "Ask {} at {}",
+                            order_id.order_sequence_number,
+                            order_id.price_in_ticks()
+                        );
                         let index = get_order_index_in_buffer(
                             order_param,
                             new_args,
-                            spacing_per_order_in_ticks
+                            spacing_per_order_in_ticks,
                         );
                         orders_params[index as usize] = order_param;
                     })
@@ -313,7 +325,11 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                             is_bid: true,
                             is_null: false,
                         };
-                        msg!("Bid {} at {}", order_id.order_sequence_number, order_id.price_in_ticks());
+                        msg!(
+                            "Bid {} at {}",
+                            order_id.order_sequence_number,
+                            order_id.price_in_ticks()
+                        );
                         let index = get_order_index_in_buffer(
                             order_param,
                             new_args,
