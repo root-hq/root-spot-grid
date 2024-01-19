@@ -14,7 +14,7 @@ use phoenix::state::Side;
 use crate::constants::*;
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
-use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data, get_order_index_in_buffer};
+use crate::utils::{generate_default_grid, load_header, parse_order_ids_from_return_data, get_order_index_in_buffer, quote_atoms_from_base_lots_around_price};
 
 pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Result<()> {
     // STEP 1 - Perform validation checks on the args passed and modify them if necessary
@@ -84,32 +84,10 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     let mut base_token_amount = 0u64;
     let mut quote_token_amount = 0u64;
 
-    let tick_size_in_quote_atoms_per_base_unit = market_header
-        .get_tick_size_in_quote_atoms_per_base_unit()
-        .as_u64();
-
     let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
-    let base_atoms_per_raw_base_unit = 10u64.pow(market_header.base_params.decimals);
-    let raw_base_units_per_base_unit = market_header.raw_base_units_per_base_unit.max(1);
-    require!(
-        (base_atoms_per_raw_base_unit * raw_base_units_per_base_unit as u64)
-            % base_atoms_per_base_lot
-            == 0,
-        SpotGridError::InvalidBaseLotSize
-    );
-    let num_base_lots_per_base_unit = (base_atoms_per_raw_base_unit
-        * raw_base_units_per_base_unit as u64)
-        / base_atoms_per_base_lot;
 
     for bid in &bids {
-        let quote_atoms_needed = bid
-            .price_in_ticks
-            .checked_mul(tick_size_in_quote_atoms_per_base_unit)
-            .unwrap()
-            .checked_mul(bid.size_in_base_lots)
-            .unwrap()
-            .checked_div(num_base_lots_per_base_unit)
-            .unwrap();
+        let quote_atoms_needed = quote_atoms_from_base_lots_around_price(&ctx.accounts.phoenix_market, bid.price_in_ticks, bid.size_in_base_lots).unwrap_or(0); 
         quote_token_amount += quote_atoms_needed;
     }
 

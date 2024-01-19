@@ -7,3 +7,4 @@ pub const QUOTE_TOKEN_VAULT_SEED: &str = "quote-token-vault";
 pub const MAX_GRIDS_PER_POSITION: usize = 15;
 
 pub const SEAT_INITIALIZATION_LAMPORTS: u64 = 10_000_000;
+pub const MAX_BASIS_POINTS: u64 = 10_000;

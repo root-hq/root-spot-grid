@@ -7,6 +7,7 @@ use anchor_lang::{
 };
 
 use phoenix::program::new_order::CondensedOrder;
+use phoenix::quantities::WrapperU64;
 use phoenix::state::markets::{FIFORestingOrder, Market};
 use phoenix::state::OrderPacket;
 use phoenix::{program::MarketHeader, state::markets::FIFOOrderId};
@@ -130,4 +131,44 @@ pub fn generate_default_grid(
     }
 
     (bids, asks)
+}
+
+pub fn quote_atoms_from_base_lots_around_price(
+    market_account_info: &AccountInfo,
+    price_in_ticks: u64,
+    size_in_base_lots: u64
+) -> Option<u64> {
+    let market_header: Option<MarketHeader> = match load_header(&market_account_info) {
+        Ok(header) => Some(header),
+        Err(_) => None 
+    };
+
+    if market_header.is_none() {
+        return None;
+    }
+
+    let tick_size_in_quote_atoms_per_base_unit = market_header.unwrap()
+        .get_tick_size_in_quote_atoms_per_base_unit()
+        .as_u64();
+
+    let base_atoms_per_base_lot = market_header.unwrap().get_base_lot_size().as_u64();
+    let base_atoms_per_raw_base_unit = 10u64.pow(market_header.unwrap().base_params.decimals);
+    let raw_base_units_per_base_unit = market_header.unwrap().raw_base_units_per_base_unit.max(1);
+    
+    if !((base_atoms_per_raw_base_unit * raw_base_units_per_base_unit as u64)
+    % base_atoms_per_base_lot
+    == 0) {
+        return None;
+    }
+
+    let num_base_lots_per_base_unit = (base_atoms_per_raw_base_unit
+        * raw_base_units_per_base_unit as u64)
+        / base_atoms_per_base_lot;
+
+        let quote_atoms_needed = price_in_ticks.checked_mul(tick_size_in_quote_atoms_per_base_unit).unwrap()
+        .checked_mul(size_in_base_lots).unwrap()
+        .checked_div(num_base_lots_per_base_unit);
+
+    quote_atoms_needed
+
 }
