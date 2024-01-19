@@ -22,7 +22,7 @@ export const handler = async() => {
 
     const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("");
 
-    let newProtocolFeePerFillBps = 2;
+    let newWithdrawalFeeInBpsHundredths = new anchor.BN(0);
     let newMinOrderSizeInBaseLots = new anchor.BN(100);
     let newMinOrderSpacingInTicks = new anchor.BN(100);
 
@@ -30,7 +30,7 @@ export const handler = async() => {
         provider,
         spotGridMarketAddress: SPOT_GRID_MARKET_ADDRESS,
         owner: provider.wallet.publicKey,
-        newProtocolFeePerFillBps: 0,
+        newWithdrawalFeeInBpsHundredths,
         newMinOrderSizeInBaseLots,
         newMinOrderSpacingInTicks
     })
@@ -41,7 +41,7 @@ export const handler = async() => {
     });
 
     console.log("Spot grid market: ", tx.spotGridMarketAddress);
-    console.log(`New protocol fee: ${newProtocolFeePerFillBps} bps`);
+    console.log(`New protocol fee: ${newWithdrawalFeeInBpsHundredths} bps`);
     console.log(`New min order size in base lots: ${newMinOrderSizeInBaseLots}`);
     console.log(`New min order spacing in ticks: ${newMinOrderSpacingInTicks}`);
     

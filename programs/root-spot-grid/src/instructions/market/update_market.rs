@@ -4,7 +4,7 @@ use crate::state::Market;
 
 pub fn update_market(
     ctx: Context<UpdateMarket>,
-    new_protocol_fee_per_fill_bps: Option<u16>,
+    new_withdrawal_fee_in_bps_hundredths: Option<u64>,
     new_min_order_spacing_in_ticks: Option<u64>,
     new_min_order_size_in_base_lots: Option<u64>,
 ) -> Result<()> {
@@ -12,8 +12,8 @@ pub fn update_market(
         new_min_order_spacing_in_ticks.unwrap_or(ctx.accounts.market.min_order_spacing_in_ticks);
     ctx.accounts.market.min_order_size_in_base_lots =
         new_min_order_size_in_base_lots.unwrap_or(ctx.accounts.market.min_order_size_in_base_lots);
-    ctx.accounts.market.protocol_fee_per_fill_bps =
-        new_protocol_fee_per_fill_bps.unwrap_or(ctx.accounts.market.protocol_fee_per_fill_bps);
+    ctx.accounts.market.withdrawal_fee_in_bps_hundredths =
+    new_withdrawal_fee_in_bps_hundredths.unwrap_or(ctx.accounts.market.withdrawal_fee_in_bps_hundredths);
 
     Ok(())
 }

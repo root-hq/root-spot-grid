@@ -19,13 +19,13 @@ pub mod root_spot_grid {
 
     pub fn initialize_market(
         ctx: Context<InitializeMarket>,
-        protocol_fee_per_fill_bps: u16,
+        withdrawal_fee_in_bps_hundredths: u64,
         min_order_spacing_in_ticks: u64,
         min_order_size_in_base_lots: u64,
     ) -> Result<()> {
         instructions::initialize_market(
             ctx,
-            protocol_fee_per_fill_bps,
+            withdrawal_fee_in_bps_hundredths,
             min_order_spacing_in_ticks,
             min_order_size_in_base_lots,
         )
@@ -33,7 +33,7 @@ pub mod root_spot_grid {
 
     pub fn update_market(
         ctx: Context<UpdateMarket>,
-        new_protocol_fee_per_fill_bps: Option<u16>,
+        new_protocol_fee_per_fill_bps: Option<u64>,
         min_order_spacing_in_ticks: Option<u64>,
         new_min_order_size_in_base_lots: Option<u64>,
     ) -> Result<()> {

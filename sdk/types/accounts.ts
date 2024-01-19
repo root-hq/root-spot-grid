@@ -22,9 +22,7 @@ export interface Market {
     protocolFeeRecipient: anchor.web3.PublicKey;
     baseTokenMint: anchor.web3.PublicKey;
     quoteTokenMint: anchor.web3.PublicKey;
-    protocolFeePerFillBps: number;
+    withdrawalFeeInBpsHundredths: number;
     minOrderSpacingInTicks: anchor.BN;
     minOrderSizeInBaseLots: anchor.BN;
-    claimedProtocolFeeInQuoteTokens: anchor.BN;
-    unclaimedProtocolFeeInQuoteTokens: anchor.BN;
 }

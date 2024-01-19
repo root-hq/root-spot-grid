@@ -7,7 +7,7 @@ export interface InitializeMarketArgs extends WriteActionArgs {
     protocolFeeRecipient: anchor.web3.PublicKey;
     baseTokenMint: anchor.web3.PublicKey;
     quoteTokenMint: anchor.web3.PublicKey;
-    protocolFeePerFillBps: number;
+    withdrawalFeeInBpsHundredths: anchor.BN;
     minOrderSpacingInTicks: anchor.BN;
     minOrderSizeInBaseLots: anchor.BN;
 }
@@ -24,7 +24,7 @@ export const initializeMarket = async({
     protocolFeeRecipient,
     baseTokenMint,
     quoteTokenMint,
-    protocolFeePerFillBps,
+    withdrawalFeeInBpsHundredths,
     minOrderSpacingInTicks,
     minOrderSizeInBaseLots
 }: InitializeMarketArgs): Promise<InitializeMarketResult> => {
@@ -39,7 +39,7 @@ export const initializeMarket = async({
     try {
         const ix = await rootProgram
             .methods
-            .initializeMarket(protocolFeePerFillBps, minOrderSpacingInTicks, minOrderSizeInBaseLots)
+            .initializeMarket(withdrawalFeeInBpsHundredths, minOrderSpacingInTicks, minOrderSizeInBaseLots)
             .accounts({
                 owner,
                 phoenixMarket,

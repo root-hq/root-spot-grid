@@ -48,8 +48,8 @@ export type RootSpotGrid = {
       ],
       "args": [
         {
-          "name": "protocolFeePerFillBps",
-          "type": "u16"
+          "name": "withdrawalFeeInBpsHundredths",
+          "type": "u64"
         },
         {
           "name": "minOrderSpacingInTicks",
@@ -79,7 +79,7 @@ export type RootSpotGrid = {
         {
           "name": "newProtocolFeePerFillBps",
           "type": {
-            "option": "u16"
+            "option": "u64"
           }
         },
         {
@@ -513,8 +513,8 @@ export type RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "protocolFeePerFillBps",
-            "type": "u16"
+            "name": "withdrawalFeeInBpsHundredths",
+            "type": "u64"
           },
           {
             "name": "minOrderSpacingInTicks",
@@ -522,14 +522,6 @@ export type RootSpotGrid = {
           },
           {
             "name": "minOrderSizeInBaseLots",
-            "type": "u64"
-          },
-          {
-            "name": "claimedProtocolFeeInQuoteTokens",
-            "type": "u64"
-          },
-          {
-            "name": "unclaimedProtocolFeeInQuoteTokens",
             "type": "u64"
           }
         ]
@@ -784,8 +776,8 @@ export const IDL: RootSpotGrid = {
       ],
       "args": [
         {
-          "name": "protocolFeePerFillBps",
-          "type": "u16"
+          "name": "withdrawalFeeInBpsHundredths",
+          "type": "u64"
         },
         {
           "name": "minOrderSpacingInTicks",
@@ -815,7 +807,7 @@ export const IDL: RootSpotGrid = {
         {
           "name": "newProtocolFeePerFillBps",
           "type": {
-            "option": "u16"
+            "option": "u64"
           }
         },
         {
@@ -1249,8 +1241,8 @@ export const IDL: RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "protocolFeePerFillBps",
-            "type": "u16"
+            "name": "withdrawalFeeInBpsHundredths",
+            "type": "u64"
           },
           {
             "name": "minOrderSpacingInTicks",
@@ -1258,14 +1250,6 @@ export const IDL: RootSpotGrid = {
           },
           {
             "name": "minOrderSizeInBaseLots",
-            "type": "u64"
-          },
-          {
-            "name": "claimedProtocolFeeInQuoteTokens",
-            "type": "u64"
-          },
-          {
-            "name": "unclaimedProtocolFeeInQuoteTokens",
             "type": "u64"
           }
         ]

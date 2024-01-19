@@ -27,7 +27,7 @@ export const handler = async() => {
         protocolFeeRecipient: provider.wallet.publicKey,
         baseTokenMint: rootSdk.WRAPPED_SOL_MAINNET,
         quoteTokenMint: rootSdk.USDC_MAINNET,
-        protocolFeePerFillBps: 5,
+        withdrawalFeeInBpsHundredths: new anchor.BN(500),
         minOrderSizeInBaseLots: new anchor.BN(250),
         minOrderSpacingInTicks: new anchor.BN(25)
     });

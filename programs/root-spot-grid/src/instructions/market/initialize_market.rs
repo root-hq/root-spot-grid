@@ -6,7 +6,7 @@ use crate::state::Market;
 
 pub fn initialize_market(
     ctx: Context<InitializeMarket>,
-    protocol_fee_per_fill_bps: u16,
+    withdrawal_fee_in_bps_hundredths: u64,
     min_order_spacing_in_ticks: u64,
     min_order_size_in_base_lots: u64,
 ) -> Result<()> {
@@ -20,9 +20,7 @@ pub fn initialize_market(
         quote_token_mint: ctx.accounts.quote_token_mint.key(),
         min_order_spacing_in_ticks,
         min_order_size_in_base_lots,
-        protocol_fee_per_fill_bps,
-        claimed_protocol_fee_in_quote_tokens: 0,
-        unclaimed_protocol_fee_in_quote_tokens: 0,
+        withdrawal_fee_in_bps_hundredths,
     };
 
     Ok(())

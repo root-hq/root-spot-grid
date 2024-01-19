@@ -4,7 +4,7 @@ import { WriteActionArgs, WriteActionResult, getRootProgram } from "../../utils"
 export interface UpdateMarketArgs extends WriteActionArgs {
     spotGridMarketAddress: anchor.web3.PublicKey;
     owner: anchor.web3.PublicKey;
-    newProtocolFeePerFillBps: number;
+    newWithdrawalFeeInBpsHundredths: anchor.BN;
     newMinOrderSpacingInTicks: anchor.BN;
     newMinOrderSizeInBaseLots: anchor.BN;
 }
@@ -17,7 +17,7 @@ export const updateMarket = async({
     provider,
     spotGridMarketAddress,
     owner,
-    newProtocolFeePerFillBps,
+    newWithdrawalFeeInBpsHundredths,
     newMinOrderSpacingInTicks,
     newMinOrderSizeInBaseLots
 }: UpdateMarketArgs): Promise<UpdateMarketResult> => {
@@ -27,7 +27,7 @@ export const updateMarket = async({
     try {
         const ix = await rootProgram
             .methods
-            .updateMarket(newProtocolFeePerFillBps, newMinOrderSpacingInTicks, newMinOrderSizeInBaseLots)
+            .updateMarket(newWithdrawalFeeInBpsHundredths, newMinOrderSpacingInTicks, newMinOrderSizeInBaseLots)
             .accounts({
                 owner,
                 market: spotGridMarketAddress,

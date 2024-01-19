@@ -48,8 +48,8 @@
       ],
       "args": [
         {
-          "name": "protocolFeePerFillBps",
-          "type": "u16"
+          "name": "withdrawalFeeInBpsHundredths",
+          "type": "u64"
         },
         {
           "name": "minOrderSpacingInTicks",
@@ -79,7 +79,7 @@
         {
           "name": "newProtocolFeePerFillBps",
           "type": {
-            "option": "u16"
+            "option": "u64"
           }
         },
         {
@@ -513,8 +513,8 @@
             "type": "publicKey"
           },
           {
-            "name": "protocolFeePerFillBps",
-            "type": "u16"
+            "name": "withdrawalFeeInBpsHundredths",
+            "type": "u64"
           },
           {
             "name": "minOrderSpacingInTicks",
@@ -522,14 +522,6 @@
           },
           {
             "name": "minOrderSizeInBaseLots",
-            "type": "u64"
-          },
-          {
-            "name": "claimedProtocolFeeInQuoteTokens",
-            "type": "u64"
-          },
-          {
-            "name": "unclaimedProtocolFeeInQuoteTokens",
             "type": "u64"
           }
         ]

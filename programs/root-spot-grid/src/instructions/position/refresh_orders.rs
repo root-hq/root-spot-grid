@@ -11,20 +11,19 @@ use phoenix::program::new_order::{
 };
 use phoenix::program::status::SeatApprovalStatus;
 use phoenix::program::{MarketHeader, Seat};
-use phoenix::quantities::WrapperU64;
 use phoenix::state::markets::FIFOOrderId;
 use phoenix::state::markets::OrderId;
 use phoenix::state::Side;
 
 use crate::constants::{
     BASE_TOKEN_VAULT_SEED, POSITION_SEED, QUOTE_TOKEN_VAULT_SEED,
-    TRADE_MANAGER_SEED, MAX_BASIS_POINTS,
+    TRADE_MANAGER_SEED,
 };
 use crate::errors::SpotGridError;
 use crate::state::{Market, OrderParams, Position};
 use crate::utils::{
     generate_default_grid, get_best_bid_and_ask, get_order_index_in_buffer, load_header,
-    parse_order_ids_from_return_data, quote_atoms_from_base_lots_around_price,
+    parse_order_ids_from_return_data,
 };
 
 pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
@@ -62,12 +61,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     let mut index_counter = 0;
     let mut fill_map: HashMap<i32, OrderParams> = HashMap::new();
 
-    let mut base_token_fee_amount = 0u64;
-    let mut quote_token_fee_amount = 0u64;
-
-    let fee_bps = ctx.accounts.spot_grid_market.protocol_fee_per_fill_bps;
-    let base_atoms_per_base_lot = market_header.get_base_lot_size().as_u64();
-
     for order in ctx.accounts.position.active_orders {
         let mut side = Side::Bid;
         if !order.is_bid {
@@ -82,29 +75,10 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             msg!("Found fill: {:?}", order);
             active_prices_map.remove(&order.price_in_ticks);
             fill_map.insert(index_counter, order);
-
-            if side == Side::Bid {
-                // Collect fee in base asset
-                let base_atoms_earned = order.size_in_base_lots.checked_mul(base_atoms_per_base_lot).unwrap();
-                base_token_fee_amount += base_atoms_earned.checked_mul(fee_bps as u64).unwrap()
-                    .checked_div(MAX_BASIS_POINTS).unwrap();
-            }
-            else if side == Side::Ask {
-                // Collect fee in quote asset
-                let quote_atoms_earned = quote_atoms_from_base_lots_around_price(&ctx.accounts.phoenix_market, order.price_in_ticks, order.size_in_base_lots).unwrap_or(0);
-                quote_token_fee_amount += quote_atoms_earned.checked_mul(fee_bps as u64).unwrap()
-                    .checked_div(MAX_BASIS_POINTS).unwrap();
-            }
         }
 
         index_counter += 1;
     }
-
-    ctx.accounts.position.fee_growth_base += base_token_fee_amount;
-    ctx.accounts.position.fee_growth_quote += quote_token_fee_amount;
-
-    msg!("Protocol fee owed base: {}", ctx.accounts.position.fee_growth_base);
-    msg!("Protocol fee owed quote: {}", ctx.accounts.position.fee_growth_quote);
 
     // STEP 3 - Populate the pending_fills buffer. Need to do this if the fill cannot
     // be counter-filled in the current iteration due to some reason

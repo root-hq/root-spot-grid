@@ -12,15 +12,12 @@ pub struct Market {
     pub base_token_mint: Pubkey,
     pub quote_token_mint: Pubkey,
 
-    pub protocol_fee_per_fill_bps: u16,
+    pub withdrawal_fee_in_bps_hundredths: u64,
 
     pub min_order_spacing_in_ticks: u64,
     pub min_order_size_in_base_lots: u64,
-
-    pub claimed_protocol_fee_in_quote_tokens: u64,
-    pub unclaimed_protocol_fee_in_quote_tokens: u64,
 }
 
 impl Market {
-    pub const LEN: usize = 8 + (1 * 1) + (6 * 32) + (1 * 2) + (4 * 8);
+    pub const LEN: usize = 8 + (1 * 1) + (6 * 32) + (1 * 2) + (3 * 8);
 }
