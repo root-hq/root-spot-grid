@@ -28,6 +28,41 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
 
     require!(not_null_counts == 0, SpotGridError::PendingOpenOrders);
 
+    let total_base_amount = ctx.accounts.base_token_vault_ac.amount;
+    let total_quote_amount = ctx.accounts.quote_token_vault_ac.amount;
+
+    let fee_bps_hundredths = ctx.accounts.spot_grid_market.withdrawal_fee_in_bps_hundredths;
+
+    let base_fee_amount = total_base_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
+    let quote_fee_amount = total_quote_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
+
+    // Transfer withdrawal fee
+    anchor_spl::token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.base_token_vault_ac.to_account_info(),
+                to: ctx.accounts.base_token_fee_ac.to_account_info(),
+                authority: ctx.accounts.trade_manager.to_account_info(),
+            },
+            trade_manager_signer_seeds,
+        ),
+        base_fee_amount
+    )?;
+
+    anchor_spl::token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.quote_token_vault_ac.to_account_info(),
+                to: ctx.accounts.quote_token_fee_ac.to_account_info(),
+                authority: ctx.accounts.trade_manager.to_account_info(),
+            },
+            trade_manager_signer_seeds,
+        ),
+        quote_fee_amount
+    )?;
+
     // Transfer back the amounts to the user
     anchor_spl::token::transfer(
         CpiContext::new_with_signer(
@@ -39,7 +74,7 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
             },
             trade_manager_signer_seeds,
         ),
-        ctx.accounts.base_token_vault_ac.amount,
+        total_base_amount.checked_sub(base_fee_amount).unwrap(),
     )?;
 
     anchor_spl::token::transfer(
@@ -52,7 +87,7 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
             },
             trade_manager_signer_seeds,
         ),
-        ctx.accounts.quote_token_vault_ac.amount,
+        total_quote_amount.checked_sub(quote_fee_amount).unwrap(),
     )?;
 
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
