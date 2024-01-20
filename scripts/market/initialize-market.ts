@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as rootSdk from "../../sdk";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import axios from "axios";
 
 require("dotenv").config();
 
@@ -54,6 +55,23 @@ export const handler = async() => {
     console.log("Min order spacing in ticks: ", minOrderSpacingInTicks.toString());
     
     console.log("Signature: ", result.signatures);
+
+    const URL = `https://spot-grid-db-utils.vercel.app/api/`;
+        const data = {
+            "spot_grid_market_address": tx.spotGridMarketAddress,
+            "phoenix_market_address": rootSdk.PHOENIX_SOL_USDC_MAINNET,
+            "spot_grid_market_key": tx.spotGridMarketKey,
+            "owner": provider.wallet.publicKey,
+            "base_token_mint": rootSdk.WRAPPED_SOL_MAINNET,
+            "quote_token_mint": rootSdk.USDC_MAINNET,
+            "withdrawal_fee_in_bps_hundredths": withdrawalFeeInBpsHundredths.toString(),
+            "min_order_spacing_in_ticks": minOrderSizeInBaseLots.toString(),
+            "min_order_size_in_base_lots": minOrderSpacingInTicks.toString(),
+        }
+    
+        const allMarkets = await axios.post(URL + `market/add-market`, data);
+        console.log("Response: ", allMarkets);
+        return true;
 }
 
 handler();
