@@ -22,14 +22,14 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("C6PpoLpTz3ZrySG5UeaRt9S3mDN1ERv1pao9zu3rJoP4");
+    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("4wAokmksMM4WAsT14KVUiVX9esyxt3NV7gCcngGiFWWk");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
-    let NUM_GRIDS = new anchor.BN(10);
-    let MIN_PRICE_IN_TICKS = new anchor.BN(93000);
-    let MAX_PRICE_IN_TICKS = new anchor.BN(94000);
+    let NUM_GRIDS = new anchor.BN(25);
+    let MIN_PRICE_IN_TICKS = new anchor.BN(100000);
+    let MAX_PRICE_IN_TICKS = new anchor.BN(130000);
     let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
 
     let args = {

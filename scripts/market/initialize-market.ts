@@ -22,6 +22,10 @@ export const handler = async() => {
 
     const PROTOCOL_FEE_RECIPIENT = new anchor.web3.PublicKey("6HyM2raEk78s8PdiRKqSF36YtSZf3CjwmReTCtdaucuf");
 
+    const withdrawalFeeInBpsHundredths = new anchor.BN(5000);
+    const minOrderSizeInBaseLots = new anchor.BN(100);
+    const minOrderSpacingInTicks = new anchor.BN(10);
+    
     const tx = await rootSdk.initializeMarket({
         provider,
         phoenixMarket: rootSdk.PHOENIX_SOL_USDC_MAINNET,
@@ -29,9 +33,9 @@ export const handler = async() => {
         protocolFeeRecipient: PROTOCOL_FEE_RECIPIENT,
         baseTokenMint: rootSdk.WRAPPED_SOL_MAINNET,
         quoteTokenMint: rootSdk.USDC_MAINNET,
-        withdrawalFeeInBpsHundredths: new anchor.BN(5000),
-        minOrderSizeInBaseLots: new anchor.BN(100),
-        minOrderSpacingInTicks: new anchor.BN(10)
+        withdrawalFeeInBpsHundredths,
+        minOrderSizeInBaseLots,
+        minOrderSpacingInTicks
     });
 
     const result = await rootSdk.executeTransactions({
@@ -45,9 +49,9 @@ export const handler = async() => {
     console.log("Owner: ", provider.wallet.publicKey);
     console.log("Base token mint: ", rootSdk.WRAPPED_SOL_MAINNET);
     console.log("Quote token mint: ", rootSdk.USDC_MAINNET);
-    console.log("Protocol fee per fill bps: ", 5);
-    console.log("Min order size in base lots: ", 250);
-    console.log("Min order spacing in ticks: ", 25);
+    console.log("Withdrawal fee per fill bps hundredths: ", withdrawalFeeInBpsHundredths.toString());
+    console.log("Min order size in base lots: ", minOrderSizeInBaseLots.toString());
+    console.log("Min order spacing in ticks: ", minOrderSpacingInTicks.toString());
     
     console.log("Signature: ", result.signatures);
 }

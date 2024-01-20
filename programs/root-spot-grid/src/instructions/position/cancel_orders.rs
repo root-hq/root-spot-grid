@@ -39,7 +39,7 @@ pub fn cancel_orders(ctx: Context<CancelOrders>) -> Result<()> {
         trade_manager_signer_seeds,
     )?;
 
-    ctx.accounts.position.active_orders = [OrderParams::default(); 15];
+    ctx.accounts.position.active_orders = [OrderParams::default(); MAX_GRIDS_PER_POSITION];
 
     // Withdraw all funds
     invoke_signed(

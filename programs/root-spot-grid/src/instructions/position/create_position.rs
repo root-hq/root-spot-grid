@@ -103,13 +103,13 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         base_token_amount += ask.size_in_base_lots * base_atoms_per_base_lot;
     }
 
-    msg!("Spot grid trading strategy");
-    msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
-    msg!("Position args: {:?}", args);
-    msg!("Generated bids: {:?}", bids);
-    msg!("Generated asks: {:?}", asks);
-    msg!("Base tokens to deposit: {:?}", base_token_amount);
-    msg!("Quote tokens to deposit: {:?}", quote_token_amount);
+    // msg!("Spot grid trading strategy");
+    // msg!("Market: {:?}", ctx.accounts.phoenix_market.key());
+    // msg!("Position args: {:?}", args);
+    // msg!("Generated bids: {:?}", bids);
+    // msg!("Generated asks: {:?}", asks);
+    // msg!("Base tokens to deposit: {:?}", base_token_amount);
+    // msg!("Quote tokens to deposit: {:?}", quote_token_amount);
 
     // STEP 4 - Transfer the calculated amount to the trade_manager
 
@@ -192,14 +192,14 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         drop(seat_account);
         drop(market_data);
 
-        msg!("trade_manager: {}", ctx.accounts.trade_manager.key());
-        msg!("log auth: {}", ctx.accounts.log_authority.key());
-        msg!("seat: {}", ctx.accounts.seat.key());
-        msg!("seat manager: {}", ctx.accounts.seat_manager.key());
-        msg!(
-            "seat deposit collector: {}",
-            ctx.accounts.seat_deposit_collector.key()
-        );
+        // msg!("trade_manager: {}", ctx.accounts.trade_manager.key());
+        // msg!("log auth: {}", ctx.accounts.log_authority.key());
+        // msg!("seat: {}", ctx.accounts.seat.key());
+        // msg!("seat manager: {}", ctx.accounts.seat_manager.key());
+        // msg!(
+        //     "seat deposit collector: {}",
+        //     ctx.accounts.seat_deposit_collector.key()
+        // );
 
         invoke_signed(
             &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
@@ -262,7 +262,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     )?;
 
     // STEP 9 - Assign the position state to the PDA
-    let mut orders_params = [OrderParams::default(); 15];
+    let mut orders_params = [OrderParams::default(); MAX_GRIDS_PER_POSITION];
 
     let new_args = PositionArgs {
         mode: args.mode,
@@ -299,11 +299,11 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                             is_bid: false,
                             is_null: false,
                         };
-                        msg!(
-                            "Ask {} at {}",
-                            order_id.order_sequence_number,
-                            order_id.price_in_ticks()
-                        );
+                        // msg!(
+                        //     "Ask {} at {}",
+                        //     order_id.order_sequence_number,
+                        //     order_id.price_in_ticks()
+                        // );
                         let index = get_order_index_in_buffer(
                             order_param,
                             new_args,
@@ -325,11 +325,11 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
                             is_bid: true,
                             is_null: false,
                         };
-                        msg!(
-                            "Bid {} at {}",
-                            order_id.order_sequence_number,
-                            order_id.price_in_ticks()
-                        );
+                        // msg!(
+                        //     "Bid {} at {}",
+                        //     order_id.order_sequence_number,
+                        //     order_id.price_in_ticks()
+                        // );
                         let index = get_order_index_in_buffer(
                             order_param,
                             new_args,
@@ -342,7 +342,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         }
     }
 
-    msg!("Order params: {:?}", orders_params);
+    // msg!("Order params: {:?}", orders_params);
 
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),

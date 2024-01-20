@@ -593,7 +593,7 @@ export type RootSpotGrid = {
                 {
                   "defined": "OrderParams"
                 },
-                15
+                25
               ]
             }
           },
@@ -604,7 +604,7 @@ export type RootSpotGrid = {
                 {
                   "defined": "OrderParams"
                 },
-                15
+                25
               ]
             }
           }
@@ -1341,7 +1341,7 @@ export const IDL: RootSpotGrid = {
                 {
                   "defined": "OrderParams"
                 },
-                15
+                25
               ]
             }
           },
@@ -1352,7 +1352,7 @@ export const IDL: RootSpotGrid = {
                 {
                   "defined": "OrderParams"
                 },
-                15
+                25
               ]
             }
           }
