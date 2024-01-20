@@ -22,14 +22,14 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2JcRS6Sq8TkrPZr3DDff6gjvovGcJU13K4pQDi8fAW73");
+    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("C6PpoLpTz3ZrySG5UeaRt9S3mDN1ERv1pao9zu3rJoP4");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
-    let NUM_GRIDS = new anchor.BN(6);
+    let NUM_GRIDS = new anchor.BN(10);
     let MIN_PRICE_IN_TICKS = new anchor.BN(93000);
-    let MAX_PRICE_IN_TICKS = new anchor.BN(95000);
+    let MAX_PRICE_IN_TICKS = new anchor.BN(94000);
     let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
 
     let args = {
@@ -70,10 +70,10 @@ export const handler = async() => {
         
         console.log("Parameters");
         console.log(`Mode: ${args.mode}`);
-        console.log(`Number of grids: ${args.numGrids.toString()}`);
-        console.log(`Minimum price in ticks: ${args.minPriceInTicks}`);
-        console.log(`Maximum price in ticks: ${args.maxPriceInTicks}`);
-        console.log(`Order size in base lots: ${args.orderSizeInBaseLots}`);
+        console.log(`Number of grids: ${args.numGrids.toNumber()}`);
+        console.log(`Minimum price in ticks: ${args.minPriceInTicks.toString()}`);
+        console.log(`Maximum price in ticks: ${args.maxPriceInTicks.toString()}`);
+        console.log(`Order size in base lots: ${args.orderSizeInBaseLots.toString()}`);
     
         console.log("Signature: https://solscan.io/tx/", result.signatures[0]);
     

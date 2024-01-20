@@ -35,9 +35,6 @@ export const closePosition = async({
     const baseTokenVaultAc = getBaseTokenVaultAddress(positionAddress);
     const quoteTokenVaultAc = getQuoteTokenVaultAddress(positionAddress);
 
-    const baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, market.protocolFeeRecipient);
-    const quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, market.protocolFeeRecipient);
-
     const tradeManager = getTradeManagerAddress(positionAddress);
 
     const phoenixClient = await Phoenix.Client.createWithMarketAddresses(
@@ -46,11 +43,9 @@ export const closePosition = async({
       );
     
     await phoenixClient.addMarket(phoenixMarket.toBase58());
-    const phoenixMarketState = phoenixClient.marketStates.get(phoenixMarket.toBase58());
 
-    const logAuthority = Phoenix.getLogAuthority();
-    const basePhoenixVault = phoenixMarketState.data.header.baseParams.vaultKey;
-    const quotePhoenixVault = phoenixMarketState.data.header.quoteParams.vaultKey;
+    const baseFeeAc = await getAssociatedTokenAddress(baseTokenMint, market.protocolFeeRecipient, true);
+    const quoteFeeAc = await getAssociatedTokenAddress(quoteTokenMint, market.protocolFeeRecipient, true);
     
     const transaction = new anchor.web3.Transaction();
 
@@ -65,16 +60,18 @@ export const closePosition = async({
                 creator: provider.wallet.publicKey,
                 phoenixMarket,
                 positionKey: position.positionKey,
+                protocolFeeRecipient: market.protocolFeeRecipient,
                 tradeManager,
                 baseTokenMint,
                 quoteTokenMint,
+                spotGridMarket: spotGridMarketAddress,
                 position: positionAddress,
                 baseTokenUserAc,
                 quoteTokenUserAc,
                 baseTokenVaultAc,
                 quoteTokenVaultAc,
-                baseTokenFeeAc,
-                quoteTokenFeeAc
+                baseTokenFeeAc: baseFeeAc,
+                quoteTokenFeeAc: quoteFeeAc
             })
             .instruction();
 

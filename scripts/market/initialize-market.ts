@@ -20,16 +20,18 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
+    const PROTOCOL_FEE_RECIPIENT = new anchor.web3.PublicKey("6HyM2raEk78s8PdiRKqSF36YtSZf3CjwmReTCtdaucuf");
+
     const tx = await rootSdk.initializeMarket({
         provider,
         phoenixMarket: rootSdk.PHOENIX_SOL_USDC_MAINNET,
         owner: provider.wallet.publicKey,
-        protocolFeeRecipient: provider.wallet.publicKey,
+        protocolFeeRecipient: PROTOCOL_FEE_RECIPIENT,
         baseTokenMint: rootSdk.WRAPPED_SOL_MAINNET,
         quoteTokenMint: rootSdk.USDC_MAINNET,
-        withdrawalFeeInBpsHundredths: new anchor.BN(500),
-        minOrderSizeInBaseLots: new anchor.BN(250),
-        minOrderSpacingInTicks: new anchor.BN(25)
+        withdrawalFeeInBpsHundredths: new anchor.BN(5000),
+        minOrderSizeInBaseLots: new anchor.BN(100),
+        minOrderSpacingInTicks: new anchor.BN(10)
     });
 
     const result = await rootSdk.executeTransactions({

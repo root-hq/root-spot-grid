@@ -3,6 +3,7 @@ import { WriteActionArgs, WriteActionResult, getBaseTokenVaultAddress, getPositi
 import { Market, Position, PositionArgs } from "../../types";
 import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
 import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 export interface CancelOrdersAndClosePositionArgs extends WriteActionArgs {
     spotGridMarketAddress: anchor.web3.PublicKey;
@@ -48,6 +49,9 @@ export const cancelOrdersAndClosePosition = async({
     const basePhoenixVault = phoenixMarketState.data.header.baseParams.vaultKey;
     const quotePhoenixVault = phoenixMarketState.data.header.quoteParams.vaultKey;
     
+    const baseFeeAc = await getAssociatedTokenAddress(baseTokenMint, market.protocolFeeRecipient, true);
+    const quoteFeeAc = await getAssociatedTokenAddress(quoteTokenMint, market.protocolFeeRecipient, true);
+
     const transaction = new anchor.web3.Transaction();
 
     const additionalUnitsIx = requestComputeUnits(1_400_000, 100);
@@ -71,7 +75,7 @@ export const cancelOrdersAndClosePosition = async({
                 quoteTokenVaultAc,
                 basePhoenixVault,
                 quotePhoenixVault,
-                phoenixProgram: Phoenix.PROGRAM_ADDRESS
+                phoenixProgram: Phoenix.PROGRAM_ADDRESS,
             })
             .instruction();
 
@@ -84,14 +88,18 @@ export const cancelOrdersAndClosePosition = async({
                 creator: provider.wallet.publicKey,
                 phoenixMarket,
                 positionKey: position.positionKey,
+                protocolFeeRecipient: market.protocolFeeRecipient,
                 tradeManager,
                 baseTokenMint,
                 quoteTokenMint,
+                spotGridMarket: spotGridMarketAddress,
                 position: positionAddress,
                 baseTokenUserAc,
                 quoteTokenUserAc,
                 baseTokenVaultAc,
-                quoteTokenVaultAc
+                quoteTokenVaultAc,
+                baseTokenFeeAc: baseFeeAc,
+                quoteTokenFeeAc: quoteFeeAc
             })
             .instruction();
 

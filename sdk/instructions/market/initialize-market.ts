@@ -36,8 +36,8 @@ export const initializeMarket = async({
 
     let spotGridMarketAddress = getSpotGridMarketAddress(phoenixMarket, spotGridMarketKeypair.publicKey);
 
-    let baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, protocolFeeRecipient, false);
-    let quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, protocolFeeRecipient, false);
+    let baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, protocolFeeRecipient, true);
+    let quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, protocolFeeRecipient, true);
 
     let baseTokenAccountInitIx = createAssociatedTokenAccountInstruction(
         provider.wallet.publicKey,
@@ -58,8 +58,14 @@ export const initializeMarket = async({
     );
 
     const transaction = new anchor.web3.Transaction();
-    transaction.add(baseTokenAccountInitIx);
-    transaction.add(quoteTokeAccountInitIx);
+    
+    if((await provider.connection.getBalance(baseTokenFeeAc)) === 0) {
+        transaction.add(baseTokenAccountInitIx);
+    }
+    
+    if((await provider.connection.getBalance(quoteTokenFeeAc)) === 0) {
+        transaction.add(quoteTokeAccountInitIx);
+    }
 
     try {
         const ix = await rootProgram
