@@ -37,7 +37,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     let market_state =
         phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
             .map_err(|_| {
-                msg!("Failed to deserialize market");
+                // msg!("Failed to deserialize market");
                 SpotGridError::PhoenixMarketError
             })?
             .inner;
@@ -110,15 +110,15 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         .unwrap_or(0)
         .checked_div(2)
         .unwrap_or(0);
-    msg!("Current market price: {}", current_market_price);
+    // msg!("Current market price: {}", current_market_price);
 
     for (k, v) in fill_map.iter_mut() {
         let order = *v;
         if order.is_bid {
             if order.order_sequence_number > 0 {
-                msg!("Evaluating bid: {}", order.order_sequence_number);
+                // msg!("Evaluating bid: {}", order.order_sequence_number);
                 let counter_fill_price = order.price_in_ticks + spacing_per_order_in_ticks;
-                msg!("Counter fill price: {}", counter_fill_price);
+                // msg!("Counter fill price: {}", counter_fill_price);
                 if counter_fill_price > current_market_price {
                     if !active_prices_map.contains(&counter_fill_price) {
                         msg!("Can counter fill with an ask");
@@ -136,9 +136,9 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             }
         } else {
             if order.order_sequence_number > 0 {
-                msg!("Evaluating ask: {}", order.order_sequence_number);
+                // msg!("Evaluating ask: {}", order.order_sequence_number);
                 let counter_fill_price = order.price_in_ticks - spacing_per_order_in_ticks;
-                msg!("Counter fill price: {}", counter_fill_price);
+                // msg!("Counter fill price: {}", counter_fill_price);
                 if counter_fill_price < current_market_price {
                     if !active_prices_map.contains(&counter_fill_price) {
                         msg!("Can counter fill with a bid");
@@ -161,7 +161,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     // then you need to place new orders making sure the previous pending_fills are prioritized first.
     // That's why this comes at last, and not above in the code.
     if not_null_counts == 0 {
-        msg!("There were zero active orders before. Maybe it was paused");
+        // msg!("There were zero active orders before. Maybe it was paused");
         let mut order_tuples: Vec<(u64, u64)> = vec![];
         let mut left_price_tracker = ctx.accounts.position.position_args.min_price_in_ticks;
         let mut right_price_tracker =
@@ -202,8 +202,8 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         }
     }
 
-    msg!("Final bids: {:?}", bids);
-    msg!("Final asks: {:?}", asks);
+    // msg!("Final bids: {:?}", bids);
+    // msg!("Final asks: {:?}", asks);
 
     // STEP 6 - Prepare signer seeds for the next CPI calls
 
@@ -221,12 +221,12 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     // STEP 7 - Acquire a seat if necessary
 
     let seat_account = ctx.accounts.seat.data.borrow();
-    msg!("seat_account length: {}", seat_account.len());
+    // msg!("seat_account length: {}", seat_account.len());
 
     let mut seat_approval_status = SeatApprovalStatus::NotApproved;
 
     if seat_account.len() > 0 {
-        msg!("Seat account is not initialized");
+        // msg!("Seat account is not initialized");
         let seat_struct = bytemuck::from_bytes::<Seat>(seat_account.as_ref());
 
         require!(
@@ -237,22 +237,22 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
     }
 
-    msg!("seat_approval_status set to: {}", seat_approval_status);
+    // msg!("seat_approval_status set to: {}", seat_approval_status);
 
     drop(seat_account);
     drop(market_data);
 
     if seat_approval_status == SeatApprovalStatus::NotApproved {
-        msg!("Not approved so claiming a seat");
+        // msg!("Not approved so claiming a seat");
 
-        msg!("trade_manager: {}", ctx.accounts.trade_manager.key());
-        msg!("log auth: {}", ctx.accounts.log_authority.key());
-        msg!("seat: {}", ctx.accounts.seat.key());
-        msg!("seat manager: {}", ctx.accounts.seat_manager.key());
-        msg!(
-            "seat deposit collector: {}",
-            ctx.accounts.seat_deposit_collector.key()
-        );
+        // msg!("trade_manager: {}", ctx.accounts.trade_manager.key());
+        // msg!("log auth: {}", ctx.accounts.log_authority.key());
+        // msg!("seat: {}", ctx.accounts.seat.key());
+        // msg!("seat manager: {}", ctx.accounts.seat_manager.key());
+        // msg!(
+        //     "seat deposit collector: {}",
+        //     ctx.accounts.seat_deposit_collector.key()
+        // );
 
         invoke_signed(
             &phoenix_seat_manager::instruction_builders::create_claim_seat_instruction(
@@ -346,11 +346,11 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             is_bid: false,
                             is_null: false,
                         };
-                        msg!(
-                            "Ask {} at {}",
-                            order_id.order_sequence_number,
-                            order_id.price_in_ticks()
-                        );
+                        // msg!(
+                        //     "Ask {} at {}",
+                        //     order_id.order_sequence_number,
+                        //     order_id.price_in_ticks()
+                        // );
                         let index = get_order_index_in_buffer(
                             order_param,
                             ctx.accounts.position.position_args,
@@ -376,11 +376,11 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
                             is_bid: true,
                             is_null: false,
                         };
-                        msg!(
-                            "Bid {} at {}",
-                            order_id.order_sequence_number,
-                            order_id.price_in_ticks()
-                        );
+                        // msg!(
+                        //     "Bid {} at {}",
+                        //     order_id.order_sequence_number,
+                        //     order_id.price_in_ticks()
+                        // );
                         let index = get_order_index_in_buffer(
                             order_param,
                             ctx.accounts.position.position_args,
@@ -393,7 +393,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         }
     }
 
-    msg!("Order params: {:?}", ctx.accounts.position.active_orders);
+    // msg!("Order params: {:?}", ctx.accounts.position.active_orders);
 
     Ok(())
 }
