@@ -53,7 +53,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
             not_null_counts += 1;
         }
     }
-    msg!("Active orders: {:?}", active_prices_map);
+    // msg!("Active orders: {:?}", active_prices_map);
 
     // STEP 2 - Get the untracked filled orders as of now and calculate fees to collect. Discard them from active_price_map
 
@@ -71,7 +71,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
         if market_state.get_book(side).get(&order_id).is_none() {
             // Order is fully filled.
-            msg!("Found fill: {:?}", order);
+            // msg!("Found fill: {:?}", order);
             active_prices_map.remove(&order.price_in_ticks);
             fill_map.insert(index_counter, order);
         }
@@ -85,10 +85,10 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
     for (k, v) in fill_map.iter() {
         ctx.accounts.position.pending_fills[*k as usize] = *v;
     }
-    msg!(
-        "Pending fills buffer: {:?}",
-        ctx.accounts.position.pending_fills
-    );
+    // msg!(
+    //     "Pending fills buffer: {:?}",
+    //     ctx.accounts.position.pending_fills
+    // );
 
     // STEP 4 - Initialize the bid/ask vectors starting with pending_fills. We keep track of all the new
     // counter-fill prices using active_price_map so that a situation like bid/ask at the same price does not occur
