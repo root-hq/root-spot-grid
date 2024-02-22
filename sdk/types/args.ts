@@ -36,7 +36,7 @@ export const getModeObject = (mode: Mode): ModeObject => {
 
 export interface PositionArgs {
     mode: ModeObject;
-    numGrids: anchor.BN;
+    numOrders: anchor.BN;
     minPriceInTicks: anchor.BN;
     maxPriceInTicks: anchor.BN;
     orderSizeInBaseLots: anchor.BN;

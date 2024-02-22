@@ -52,9 +52,9 @@ export const handler = async() => {
         transactionInfos: tx.transactionInfos
     });
 
-    console.log("Spot grid market: ", tx.spotGridMarketAddress);
+    console.log("Bot market: ", tx.botMarketAddress);
     console.log("Phoenix market: ", PHOENIX_MARKET_KEY);
-    console.log("Spot grid market key: ", tx.spotGridMarketKey);
+    console.log("Bot market key: ", tx.botMarketKey);
     console.log("Owner: ", provider.wallet.publicKey);
     console.log("Base token mint: ", BASE_TOKEN_MINT);
     console.log("Quote token mint: ", QUOTE_TOKEN_MINT);
@@ -66,9 +66,9 @@ export const handler = async() => {
 
     const URL = `https://spot-grid-db-utils.vercel.app/api/`;
         const data = {
-            "spot_grid_market_address": tx.spotGridMarketAddress,
+            "bot_market_address": tx.botMarketAddress,
             "phoenix_market_address": PHOENIX_MARKET_KEY,
-            "spot_grid_market_key": tx.spotGridMarketKey,
+            "bot_market_key": tx.botMarketKey,
             "owner": provider.wallet.publicKey,
             "base_token_mint": BASE_TOKEN_MINT,
             "quote_token_mint": QUOTE_TOKEN_MINT,

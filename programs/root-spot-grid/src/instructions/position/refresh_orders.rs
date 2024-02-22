@@ -18,7 +18,7 @@ use phoenix::state::Side;
 use crate::constants::{
     BASE_TOKEN_VAULT_SEED, POSITION_SEED, QUOTE_TOKEN_VAULT_SEED, TRADE_MANAGER_SEED,
 };
-use crate::errors::SpotGridError;
+use crate::errors::RootTradingBotError;
 use crate::state::{Market, OrderParams, Position};
 use crate::utils::{
     generate_default_grid, get_best_bid_and_ask, get_order_index_in_buffer, load_header,
@@ -38,7 +38,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
             .map_err(|_| {
                 // msg!("Failed to deserialize market");
-                SpotGridError::PhoenixMarketError
+                RootTradingBotError::PhoenixMarketError
             })?
             .inner;
 
@@ -100,7 +100,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         .max_price_in_ticks
         .checked_sub(ctx.accounts.position.position_args.min_price_in_ticks)
         .unwrap()
-        .checked_div(ctx.accounts.position.position_args.num_grids)
+        .checked_div(ctx.accounts.position.position_args.num_orders)
         .unwrap();
 
     let best_bid_ask_prices = get_best_bid_and_ask(market_state);
@@ -231,7 +231,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
         require!(
             SeatApprovalStatus::from(seat_struct.approval_status) != SeatApprovalStatus::Retired,
-            SpotGridError::PhoenixVaultSeatRetired
+            RootTradingBotError::PhoenixVaultSeatRetired
         );
 
         seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
@@ -323,7 +323,7 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
         phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
             .map_err(|_| {
                 msg!("Failed to deserialize market");
-                SpotGridError::PhoenixMarketError
+                RootTradingBotError::PhoenixMarketError
             })?
             .inner;
 
@@ -412,7 +412,7 @@ pub struct RefreshOrders<'info> {
         has_one = base_token_mint,
         has_one = quote_token_mint
     )]
-    pub spot_grid_market: Box<Account<'info, Market>>,
+    pub bot_market: Box<Account<'info, Market>>,
 
     /// CHECK: No constraint needed
     pub position_key: UncheckedAccount<'info>,
@@ -454,7 +454,7 @@ pub struct RefreshOrders<'info> {
             position_key.key().as_ref()
         ],
         bump = position.bump,
-        has_one = spot_grid_market
+        has_one = bot_market
     )]
     pub position: Box<Account<'info, Position>>,
 

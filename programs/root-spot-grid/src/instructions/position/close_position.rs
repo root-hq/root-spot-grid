@@ -1,5 +1,5 @@
 use crate::{constants::*, Market};
-use crate::errors::SpotGridError;
+use crate::errors::RootTradingBotError;
 use crate::state::Position;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke_signed;
@@ -26,12 +26,12 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
         }
     }
 
-    require!(not_null_counts == 0, SpotGridError::PendingOpenOrders);
+    require!(not_null_counts == 0, RootTradingBotError::PendingOpenOrders);
 
     let total_base_amount = ctx.accounts.base_token_vault_ac.amount;
     let total_quote_amount = ctx.accounts.quote_token_vault_ac.amount;
 
-    let fee_bps_hundredths = ctx.accounts.spot_grid_market.withdrawal_fee_in_bps_hundredths;
+    let fee_bps_hundredths = ctx.accounts.bot_market.withdrawal_fee_in_bps_hundredths;
 
     let base_fee_amount = total_base_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
     let quote_fee_amount = total_quote_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
@@ -92,13 +92,13 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
 
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
         &ctx.accounts.trade_manager.key(),
-        &ctx.accounts.creator.key(),
+        &ctx.accounts.owner.key(),
         trade_manager_balance,
     );
     invoke_signed(
         &transfer_ix,
         &[
-            ctx.accounts.creator.to_account_info(),
+            ctx.accounts.owner.to_account_info(),
             ctx.accounts.trade_manager.to_account_info(),
         ],
         trade_manager_signer_seeds,
@@ -110,7 +110,7 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
 #[derive(Accounts)]
 pub struct ClosePosition<'info> {
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub owner: Signer<'info>,
 
     #[account(mut)]
     /// CHECK: No constraint needed
@@ -143,7 +143,7 @@ pub struct ClosePosition<'info> {
         has_one = quote_token_mint,
         has_one = protocol_fee_recipient
     )]
-    pub spot_grid_market: Box<Account<'info, Market>>,
+    pub bot_market: Box<Account<'info, Market>>,
 
     #[account(
         mut,
@@ -152,22 +152,23 @@ pub struct ClosePosition<'info> {
             position_key.key().as_ref()
         ],
         bump = position.bump,
-        has_one = spot_grid_market,
-        close = creator
+        has_one = bot_market,
+        has_one = owner,
+        close = owner
     )]
     pub position: Box<Account<'info, Position>>,
 
     #[account(
         mut,
         token::mint = base_token_mint,
-        token::authority = creator,
+        token::authority = owner,
     )]
     pub base_token_user_ac: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
         token::mint = quote_token_mint,
-        token::authority = creator,
+        token::authority = owner,
     )]
     pub quote_token_user_ac: Box<Account<'info, TokenAccount>>,
 

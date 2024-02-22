@@ -12,7 +12,7 @@ use phoenix::state::markets::OrderId;
 use phoenix::state::Side;
 
 use crate::constants::*;
-use crate::errors::SpotGridError;
+use crate::errors::RootTradingBotError;
 use crate::state::{Market, OrderParams, Position, PositionArgs};
 use crate::utils::{
     generate_default_grid, get_order_index_in_buffer, load_header,
@@ -24,23 +24,23 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
 
     require!(
         args.min_price_in_ticks < args.max_price_in_ticks,
-        SpotGridError::InvalidPriceRange
+        RootTradingBotError::InvalidPriceRange
     );
 
-    let mut num_grids = args.num_grids;
+    let mut num_orders = args.num_orders;
     let mut spacing_per_order_in_ticks = args
         .max_price_in_ticks
         .checked_sub(args.min_price_in_ticks)
         .unwrap()
-        .checked_div(num_grids)
+        .checked_div(num_orders)
         .unwrap();
     let order_size_in_base_lots = args
         .order_size_in_base_lots
-        .max(ctx.accounts.spot_grid_market.min_order_size_in_base_lots);
+        .max(ctx.accounts.bot_market.min_order_size_in_base_lots);
 
-    if spacing_per_order_in_ticks < ctx.accounts.spot_grid_market.min_order_spacing_in_ticks {
-        spacing_per_order_in_ticks = ctx.accounts.spot_grid_market.min_order_spacing_in_ticks;
-        num_grids = args
+    if spacing_per_order_in_ticks < ctx.accounts.bot_market.min_order_spacing_in_ticks {
+        spacing_per_order_in_ticks = ctx.accounts.bot_market.min_order_spacing_in_ticks;
+        num_orders = args
             .max_price_in_ticks
             .checked_sub(args.min_price_in_ticks)
             .unwrap()
@@ -49,8 +49,8 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     }
 
     require!(
-        num_grids as usize <= MAX_GRIDS_PER_POSITION,
-        SpotGridError::ExceededMaxNumGrids
+        num_orders as usize <= MAX_ORDERS_PER_POSITION,
+        RootTradingBotError::ExceededMaxNumOrders
     );
 
     let mut order_tuples: Vec<(u64, u64)> = vec![];
@@ -75,7 +75,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
             .map_err(|_| {
                 msg!("Failed to deserialize market");
-                SpotGridError::PhoenixMarketError
+                RootTradingBotError::PhoenixMarketError
             })?
             .inner;
 
@@ -119,7 +119,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
             Transfer {
                 from: ctx.accounts.base_token_user_ac.to_account_info(),
                 to: ctx.accounts.base_token_vault_ac.to_account_info(),
-                authority: ctx.accounts.creator.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
             },
         ),
         base_token_amount,
@@ -131,7 +131,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
             Transfer {
                 from: ctx.accounts.quote_token_user_ac.to_account_info(),
                 to: ctx.accounts.quote_token_vault_ac.to_account_info(),
-                authority: ctx.accounts.creator.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
             },
         ),
         quote_token_amount,
@@ -140,14 +140,14 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     // STEP 5 - Transfer some SOL to trade_manager for seat initialization later
 
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
-        &ctx.accounts.creator.key(),
+        &ctx.accounts.owner.key(),
         &ctx.accounts.trade_manager.key(),
         SEAT_INITIALIZATION_LAMPORTS,
     );
     invoke(
         &transfer_ix,
         &[
-            ctx.accounts.creator.to_account_info(),
+            ctx.accounts.owner.to_account_info(),
             ctx.accounts.trade_manager.to_account_info(),
         ],
     )?;
@@ -178,7 +178,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
 
         require!(
             SeatApprovalStatus::from(seat_struct.approval_status) != SeatApprovalStatus::Retired,
-            SpotGridError::PhoenixVaultSeatRetired
+            RootTradingBotError::PhoenixVaultSeatRetired
         );
 
         seat_approval_status = SeatApprovalStatus::from(seat_struct.approval_status);
@@ -262,11 +262,11 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     )?;
 
     // STEP 9 - Assign the position state to the PDA
-    let mut orders_params = [OrderParams::default(); MAX_GRIDS_PER_POSITION];
+    let mut orders_params = [OrderParams::default(); MAX_ORDERS_PER_POSITION];
 
     let new_args = PositionArgs {
         mode: args.mode,
-        num_grids,
+        num_orders,
         min_price_in_ticks: final_min_price_in_ticks,
         max_price_in_ticks: final_max_price_in_ticks,
         order_size_in_base_lots,
@@ -280,7 +280,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
         phoenix::program::load_with_dispatch(&market_header.market_size_params, market_bytes)
             .map_err(|_| {
                 msg!("Failed to deserialize market");
-                SpotGridError::PhoenixMarketError
+                RootTradingBotError::PhoenixMarketError
             })?
             .inner;
 
@@ -347,14 +347,14 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
     **ctx.accounts.position = Position {
         bump: *ctx.bumps.get("position").unwrap(),
         position_key: ctx.accounts.position_key.key(),
-        spot_grid_market: ctx.accounts.spot_grid_market.key(),
-        owner: ctx.accounts.creator.key(),
+        bot_market: ctx.accounts.bot_market.key(),
+        owner: ctx.accounts.owner.key(),
         trade_manager: ctx.accounts.trade_manager.key(),
         position_args: new_args,
         fee_growth_base: 0,
         fee_growth_quote: 0,
         active_orders: orders_params,
-        pending_fills: [OrderParams::default(); MAX_GRIDS_PER_POSITION],
+        pending_fills: [OrderParams::default(); MAX_ORDERS_PER_POSITION],
     };
 
     Ok(())
@@ -363,7 +363,7 @@ pub fn create_position(ctx: Context<CreatePosition>, args: PositionArgs) -> Resu
 #[derive(Accounts)]
 pub struct CreatePosition<'info> {
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub owner: Signer<'info>,
 
     #[account(mut)]
     /// CHECK: No constraint needed
@@ -374,7 +374,7 @@ pub struct CreatePosition<'info> {
         has_one = base_token_mint,
         has_one = quote_token_mint
     )]
-    pub spot_grid_market: Box<Account<'info, Market>>,
+    pub bot_market: Box<Account<'info, Market>>,
 
     /// CHECK: No constraint needed
     pub position_key: UncheckedAccount<'info>,
@@ -417,7 +417,7 @@ pub struct CreatePosition<'info> {
         ],
         bump,
         space = Position::LEN,
-        payer = creator
+        payer = owner
     )]
     pub position: Box<Account<'info, Position>>,
 
@@ -429,7 +429,7 @@ pub struct CreatePosition<'info> {
 
     #[account(
         init_if_needed,
-        payer = creator,
+        payer = owner,
         seeds = [BASE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
         bump,
         token::mint = base_token_mint,
@@ -439,7 +439,7 @@ pub struct CreatePosition<'info> {
 
     #[account(
         init_if_needed,
-        payer = creator,
+        payer = owner,
         seeds = [QUOTE_TOKEN_VAULT_SEED.as_bytes(), position.key().as_ref()],
         bump,
         token::mint = quote_token_mint,

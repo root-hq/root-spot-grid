@@ -39,7 +39,7 @@ pub fn cancel_orders(ctx: Context<CancelOrders>) -> Result<()> {
         trade_manager_signer_seeds,
     )?;
 
-    ctx.accounts.position.active_orders = [OrderParams::default(); MAX_GRIDS_PER_POSITION];
+    ctx.accounts.position.active_orders = [OrderParams::default(); MAX_ORDERS_PER_POSITION];
 
     // Withdraw all funds
     invoke_signed(
@@ -71,7 +71,7 @@ pub fn cancel_orders(ctx: Context<CancelOrders>) -> Result<()> {
 #[derive(Accounts)]
 pub struct CancelOrders<'info> {
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub owner: Signer<'info>,
 
     #[account(mut)]
     /// CHECK: No constraint needed
@@ -105,6 +105,7 @@ pub struct CancelOrders<'info> {
             position_key.key().as_ref()
         ],
         bump = position.bump,
+        has_one = owner
     )]
     pub position: Box<Account<'info, Position>>,
 

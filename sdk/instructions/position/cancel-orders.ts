@@ -4,7 +4,7 @@ import { Market, Position } from "../../types";
 import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
 
 export interface CancelOrdersArgs extends WriteActionArgs {
-    spotGridMarketAddress: anchor.web3.PublicKey;
+    botMarketAddress: anchor.web3.PublicKey;
     positionAddress: anchor.web3.PublicKey;
 }
 
@@ -14,12 +14,12 @@ export interface CancelOrdersResult extends WriteActionResult {
 
 export const cancelOrders = async({
     provider,
-    spotGridMarketAddress,
+    botMarketAddress,
     positionAddress
 }: CancelOrdersArgs): Promise<CancelOrdersResult> => {
     let rootProgram = getRootProgram(provider);
 
-    const market = await rootProgram.account.market.fetch(spotGridMarketAddress) as Market;
+    const market = await rootProgram.account.market.fetch(botMarketAddress) as Market;
     const position = await rootProgram.account.position.fetch(positionAddress) as Position;
 
     const phoenixMarket = market.phoenixMarket;
@@ -52,7 +52,7 @@ export const cancelOrders = async({
             .methods
             .cancelOrders()
             .accounts({
-                creator: provider.wallet.publicKey,
+                owner: provider.wallet.publicKey,
                 phoenixMarket,
                 positionKey: position.positionKey,
                 logAuthority,

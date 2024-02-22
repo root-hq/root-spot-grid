@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 
-export const ROOT_SPOT_GRID_PROGRAM_ID = new anchor.web3.PublicKey(
+export const ROOT_TRADING_BOTS_PROGRAM_ID = new anchor.web3.PublicKey(
   "13uxuLoQHvpp1K1571WcgoTYEV4Ys5ni7LqjBZiTmNNx"
 );
 

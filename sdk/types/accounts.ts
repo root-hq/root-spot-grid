@@ -4,7 +4,7 @@ import * as anchor from "@coral-xyz/anchor";
 export interface Position {
     bump: number;
     positionKey: anchor.web3.PublicKey;
-    spotGridMarket: anchor.web3.PublicKey;
+    botMarket: anchor.web3.PublicKey;
     owner: anchor.web3.PublicKey;
     tradeManager: anchor.web3.PublicKey;
 

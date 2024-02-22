@@ -12,7 +12,7 @@ use phoenix::state::markets::{FIFORestingOrder, Market};
 use phoenix::state::OrderPacket;
 use phoenix::{program::MarketHeader, state::markets::FIFOOrderId};
 
-use crate::errors::SpotGridError;
+use crate::errors::RootTradingBotError;
 
 #[derive(Clone)]
 pub struct PhoenixV1;
@@ -53,18 +53,18 @@ pub fn parse_order_ids_from_return_data(order_ids: &mut Vec<FIFOOrderId>) -> Res
 pub fn load_header(info: &AccountInfo) -> Result<MarketHeader> {
     require!(
         info.owner == &phoenix::id(),
-        SpotGridError::InvalidPhoenixProgram
+        RootTradingBotError::InvalidPhoenixProgram
     );
     let data = info.data.borrow();
     let header =
         bytemuck::try_from_bytes::<MarketHeader>(&data[..std::mem::size_of::<MarketHeader>()])
             .map_err(|_| {
                 msg!("Failed to parse Phoenix market header");
-                SpotGridError::PhoenixMarketError
+                RootTradingBotError::PhoenixMarketError
             })?;
     require!(
         header.discriminant == PHOENIX_MARKET_DISCRIMINANT,
-        SpotGridError::InvalidPhoenixProgram,
+        RootTradingBotError::InvalidPhoenixProgram,
     );
     Ok(*header)
 }

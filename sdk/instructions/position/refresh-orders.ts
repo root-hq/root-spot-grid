@@ -20,7 +20,7 @@ export const refreshOrders = async({
 
     const position = await rootProgram.account.position.fetch(positionAddress) as Position;
 
-    const market = await rootProgram.account.market.fetch(position.spotGridMarket) as Market;
+    const market = await rootProgram.account.market.fetch(position.botMarket) as Market;
 
     const phoenixMarket = market.phoenixMarket;
     const baseTokenMint = market.baseTokenMint;
@@ -60,7 +60,7 @@ export const refreshOrders = async({
             .accounts({
                 cranker: provider.wallet.publicKey,
                 phoenixMarket,
-                spotGridMarket: position.spotGridMarket,
+                botMarket: position.botMarket,
                 positionKey: position.positionKey,
                 tradeManager,
                 logAuthority,

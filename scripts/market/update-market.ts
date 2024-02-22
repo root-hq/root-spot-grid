@@ -6,7 +6,7 @@ require("dotenv").config();
 
 export const handler = async() => {
     //@ts-ignore
-    let privateKeyArray = JSON.parse(process.env.PRIVATE_KEY);
+    let privateKeyArray = JSON.parse(process.env.FAKE_PRIVATE_KEY);
 
     let traderKeypair = anchor.web3.Keypair.fromSecretKey(
         Uint8Array.from(privateKeyArray)
@@ -20,15 +20,15 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("");
+    const BOT_MARKET_ADDRESS = new anchor.web3.PublicKey("8CYDRGjWxfo3nNDKbyHaftyayfdatAf34igLFZUeULsm");
 
-    let newWithdrawalFeeInBpsHundredths = new anchor.BN(0);
-    let newMinOrderSizeInBaseLots = new anchor.BN(100);
+    let newWithdrawalFeeInBpsHundredths = new anchor.BN(5002);
+    let newMinOrderSizeInBaseLots = new anchor.BN(250);
     let newMinOrderSpacingInTicks = new anchor.BN(100);
 
     const tx = await rootSdk.updateMarket({
         provider,
-        spotGridMarketAddress: SPOT_GRID_MARKET_ADDRESS,
+        botMarketAddress: BOT_MARKET_ADDRESS,
         owner: provider.wallet.publicKey,
         newWithdrawalFeeInBpsHundredths,
         newMinOrderSizeInBaseLots,
@@ -40,7 +40,7 @@ export const handler = async() => {
         transactionInfos: tx.transactionInfos
     });
 
-    console.log("Spot grid market: ", tx.spotGridMarketAddress);
+    console.log("Bot market: ", tx.botMarketAddress);
     console.log(`New protocol fee: ${newWithdrawalFeeInBpsHundredths} bps`);
     console.log(`New min order size in base lots: ${newMinOrderSizeInBaseLots}`);
     console.log(`New min order spacing in ticks: ${newMinOrderSpacingInTicks}`);

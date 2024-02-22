@@ -21,7 +21,7 @@
           "isSigner": false
         },
         {
-          "name": "spotGridMarketKey",
+          "name": "botMarketKey",
           "isMut": false,
           "isSigner": false
         },
@@ -100,7 +100,7 @@
       "name": "createPosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -110,7 +110,7 @@
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -223,7 +223,7 @@
       "name": "cancelOrders",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -304,7 +304,7 @@
       "name": "closePosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -339,7 +339,7 @@
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -405,7 +405,7 @@
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -513,7 +513,7 @@
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarketKey",
+            "name": "botMarketKey",
             "type": "publicKey"
           },
           {
@@ -561,7 +561,7 @@
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarket",
+            "name": "botMarket",
             "type": "publicKey"
           },
           {
@@ -653,7 +653,7 @@
             }
           },
           {
-            "name": "numGrids",
+            "name": "numOrders",
             "type": "u64"
           },
           {
@@ -710,8 +710,8 @@
     },
     {
       "code": 6001,
-      "name": "ExceededMaxNumGrids",
-      "msg": "Exceeded number of grids limit"
+      "name": "ExceededMaxNumOrders",
+      "msg": "Exceeded number of orders limit"
     },
     {
       "code": 6002,

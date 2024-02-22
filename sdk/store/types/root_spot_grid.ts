@@ -21,7 +21,7 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarketKey",
+          "name": "botMarketKey",
           "isMut": false,
           "isSigner": false
         },
@@ -100,7 +100,7 @@ export type RootSpotGrid = {
       "name": "createPosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -110,7 +110,7 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -223,7 +223,7 @@ export type RootSpotGrid = {
       "name": "cancelOrders",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -304,7 +304,7 @@ export type RootSpotGrid = {
       "name": "closePosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -339,7 +339,7 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -405,7 +405,7 @@ export type RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -513,7 +513,7 @@ export type RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarketKey",
+            "name": "botMarketKey",
             "type": "publicKey"
           },
           {
@@ -561,7 +561,7 @@ export type RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarket",
+            "name": "botMarket",
             "type": "publicKey"
           },
           {
@@ -653,7 +653,7 @@ export type RootSpotGrid = {
             }
           },
           {
-            "name": "numGrids",
+            "name": "numOrders",
             "type": "u64"
           },
           {
@@ -710,8 +710,8 @@ export type RootSpotGrid = {
     },
     {
       "code": 6001,
-      "name": "ExceededMaxNumGrids",
-      "msg": "Exceeded number of grids limit"
+      "name": "ExceededMaxNumOrders",
+      "msg": "Exceeded number of orders limit"
     },
     {
       "code": 6002,
@@ -769,7 +769,7 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarketKey",
+          "name": "botMarketKey",
           "isMut": false,
           "isSigner": false
         },
@@ -848,7 +848,7 @@ export const IDL: RootSpotGrid = {
       "name": "createPosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -858,7 +858,7 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -971,7 +971,7 @@ export const IDL: RootSpotGrid = {
       "name": "cancelOrders",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -1052,7 +1052,7 @@ export const IDL: RootSpotGrid = {
       "name": "closePosition",
       "accounts": [
         {
-          "name": "creator",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -1087,7 +1087,7 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -1153,7 +1153,7 @@ export const IDL: RootSpotGrid = {
           "isSigner": false
         },
         {
-          "name": "spotGridMarket",
+          "name": "botMarket",
           "isMut": false,
           "isSigner": false
         },
@@ -1261,7 +1261,7 @@ export const IDL: RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarketKey",
+            "name": "botMarketKey",
             "type": "publicKey"
           },
           {
@@ -1309,7 +1309,7 @@ export const IDL: RootSpotGrid = {
             "type": "publicKey"
           },
           {
-            "name": "spotGridMarket",
+            "name": "botMarket",
             "type": "publicKey"
           },
           {
@@ -1401,7 +1401,7 @@ export const IDL: RootSpotGrid = {
             }
           },
           {
-            "name": "numGrids",
+            "name": "numOrders",
             "type": "u64"
           },
           {
@@ -1458,8 +1458,8 @@ export const IDL: RootSpotGrid = {
     },
     {
       "code": 6001,
-      "name": "ExceededMaxNumGrids",
-      "msg": "Exceeded number of grids limit"
+      "name": "ExceededMaxNumOrders",
+      "msg": "Exceeded number of orders limit"
     },
     {
       "code": 6002,

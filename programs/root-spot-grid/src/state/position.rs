@@ -1,4 +1,4 @@
-use crate::constants::MAX_GRIDS_PER_POSITION;
+use crate::constants::MAX_ORDERS_PER_POSITION;
 use anchor_lang::prelude::*;
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy)]
@@ -41,7 +41,7 @@ impl Default for Mode {
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy, Default)]
 pub struct PositionArgs {
     pub mode: Mode,
-    pub num_grids: u64,
+    pub num_orders: u64,
     pub min_price_in_ticks: u64,
     pub max_price_in_ticks: u64,
     pub order_size_in_base_lots: u64,
@@ -56,7 +56,7 @@ impl PositionArgs {
 pub struct Position {
     pub bump: u8,
     pub position_key: Pubkey,
-    pub spot_grid_market: Pubkey,
+    pub bot_market: Pubkey,
     pub owner: Pubkey,
     pub trade_manager: Pubkey,
 
@@ -65,8 +65,8 @@ pub struct Position {
     pub fee_growth_base: u64,
     pub fee_growth_quote: u64,
 
-    pub active_orders: [OrderParams; MAX_GRIDS_PER_POSITION],
-    pub pending_fills: [OrderParams; MAX_GRIDS_PER_POSITION],
+    pub active_orders: [OrderParams; MAX_ORDERS_PER_POSITION],
+    pub pending_fills: [OrderParams; MAX_ORDERS_PER_POSITION],
 }
 
 impl Position {
@@ -75,5 +75,5 @@ impl Position {
         + (4 * 32)
         + PositionArgs::LEN
         + (2 * 8)
-        + (2 * MAX_GRIDS_PER_POSITION * OrderParams::LEN);
+        + (2 * MAX_ORDERS_PER_POSITION * OrderParams::LEN);
 }

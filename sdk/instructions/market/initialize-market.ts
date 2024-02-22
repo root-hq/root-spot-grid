@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { WriteActionArgs, WriteActionResult, getRootProgram, getSpotGridMarketAddress } from "../../utils";
+import { WriteActionArgs, WriteActionResult, getRootProgram, getBotMarketAddress } from "../../utils";
 import { TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
 import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 
@@ -15,8 +15,8 @@ export interface InitializeMarketArgs extends WriteActionArgs {
 }
 
 export interface InitializeMarketResult extends WriteActionResult {
-    spotGridMarketAddress: anchor.web3.PublicKey;
-    spotGridMarketKey: anchor.web3.PublicKey;
+   botMarketAddress: anchor.web3.PublicKey;
+    botMarketKey: anchor.web3.PublicKey;
 }
 
 export const initializeMarket = async({
@@ -32,9 +32,9 @@ export const initializeMarket = async({
 }: InitializeMarketArgs): Promise<InitializeMarketResult> => {
     let rootProgram = getRootProgram(provider);
 
-    let spotGridMarketKeypair = anchor.web3.Keypair.generate();
+    let botMarketKeypair = anchor.web3.Keypair.generate();
 
-    let spotGridMarketAddress = getSpotGridMarketAddress(phoenixMarket, spotGridMarketKeypair.publicKey);
+    let botMarketAddress = getBotMarketAddress(phoenixMarket, botMarketKeypair.publicKey);
 
     let baseTokenFeeAc = await getAssociatedTokenAddress(baseTokenMint, protocolFeeRecipient, true);
     let quoteTokenFeeAc = await getAssociatedTokenAddress(quoteTokenMint, protocolFeeRecipient, true);
@@ -74,9 +74,9 @@ export const initializeMarket = async({
             .accounts({
                 owner,
                 phoenixMarket,
-                spotGridMarketKey: spotGridMarketKeypair.publicKey,
+                botMarketKey: botMarketKeypair.publicKey,
                 protocolFeeRecipient,
-                market: spotGridMarketAddress,
+                market: botMarketAddress,
                 baseTokenMint,
                 quoteTokenMint
             })
@@ -85,8 +85,8 @@ export const initializeMarket = async({
         transaction.add(ix);
         
         return {
-            spotGridMarketAddress,
-            spotGridMarketKey: spotGridMarketKeypair.publicKey,
+            botMarketAddress,
+            botMarketKey: botMarketKeypair.publicKey,
             transactionInfos: [
                 {
                     transaction

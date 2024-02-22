@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { WriteActionArgs, WriteActionResult, getRootProgram } from "../../utils";
 
 export interface UpdateMarketArgs extends WriteActionArgs {
-    spotGridMarketAddress: anchor.web3.PublicKey;
+    botMarketAddress: anchor.web3.PublicKey;
     owner: anchor.web3.PublicKey;
     newWithdrawalFeeInBpsHundredths: anchor.BN;
     newMinOrderSpacingInTicks: anchor.BN;
@@ -10,12 +10,12 @@ export interface UpdateMarketArgs extends WriteActionArgs {
 }
 
 export interface UpdateMarketResult extends WriteActionResult {
-    spotGridMarketAddress: anchor.web3.PublicKey;
+    botMarketAddress: anchor.web3.PublicKey;
 }
 
 export const updateMarket = async({
     provider,
-    spotGridMarketAddress,
+    botMarketAddress,
     owner,
     newWithdrawalFeeInBpsHundredths,
     newMinOrderSpacingInTicks,
@@ -30,14 +30,14 @@ export const updateMarket = async({
             .updateMarket(newWithdrawalFeeInBpsHundredths, newMinOrderSpacingInTicks, newMinOrderSizeInBaseLots)
             .accounts({
                 owner,
-                market: spotGridMarketAddress,
+                market: botMarketAddress,
             })
             .instruction();
 
         transaction.add(ix);
         
         return {
-            spotGridMarketAddress,
+            botMarketAddress,
             transactionInfos: [
                 {
                     transaction

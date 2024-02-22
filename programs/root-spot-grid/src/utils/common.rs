@@ -16,12 +16,12 @@ pub fn get_order_index_in_buffer(
 
     if order.is_bid {
         assert!(order.price_in_ticks < max_price_in_ticks);
-        assert!(position_args.num_grids as i32 > index);
+        assert!(position_args.num_orders as i32 > index);
         index
     } else {
         index -= 1;
         assert!(order.price_in_ticks > min_price_in_ticks);
-        assert!(position_args.num_grids as i32 > index);
+        assert!(position_args.num_orders as i32 > index);
         index
     }
 }

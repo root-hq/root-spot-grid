@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 pub struct Market {
     pub bump: u8,
     pub phoenix_market: Pubkey,
-    pub spot_grid_market_key: Pubkey,
+    pub bot_market_key: Pubkey,
     pub owner: Pubkey,
     pub protocol_fee_recipient: Pubkey,
 

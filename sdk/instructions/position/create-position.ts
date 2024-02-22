@@ -5,7 +5,7 @@ import * as Phoenix from "@ellipsis-labs/phoenix-sdk";
 import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
 
 export interface CreatePositionArgs extends WriteActionArgs {
-    spotGridMarketAddress: anchor.web3.PublicKey;
+    botMarketAddress: anchor.web3.PublicKey;
     baseTokenUserAc: anchor.web3.PublicKey;
     quoteTokenUserAc: anchor.web3.PublicKey;
     positionArgs: PositionArgs
@@ -20,7 +20,7 @@ export interface CreatePositionResult extends WriteActionResult {
 
 export const createPosition = async({
     provider,
-    spotGridMarketAddress,
+    botMarketAddress,
     baseTokenUserAc,
     quoteTokenUserAc,
     positionArgs
@@ -29,7 +29,7 @@ export const createPosition = async({
 
     const positionKey = anchor.web3.Keypair.generate();
 
-    const market = await rootProgram.account.market.fetch(spotGridMarketAddress) as Market;
+    const market = await rootProgram.account.market.fetch(botMarketAddress) as Market;
 
     const phoenixMarket = market.phoenixMarket;
     const baseTokenMint = market.baseTokenMint;
@@ -69,9 +69,9 @@ export const createPosition = async({
             .methods
             .createPosition(positionArgs)
             .accounts({
-                creator: provider.wallet.publicKey,
+                owner: provider.wallet.publicKey,
                 phoenixMarket,
-                spotGridMarket: spotGridMarketAddress,
+                botMarket: botMarketAddress,
                 positionKey: positionKey.publicKey,
                 tradeManager,
                 logAuthority,

@@ -22,12 +22,12 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2Fr54uBXzNVMJeGzSEhY85gR58L9rEXkhSqPiy8q5Vr1");
+    const BOT_MARKET_ADDRESS = new anchor.web3.PublicKey("2Fr54uBXzNVMJeGzSEhY85gR58L9rEXkhSqPiy8q5Vr1");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);
 
-    let NUM_GRIDS = new anchor.BN(25);
+    let NUM_ORDERS = new anchor.BN(25);
     let MIN_PRICE_IN_TICKS = new anchor.BN(93000);
     let MAX_PRICE_IN_TICKS = new anchor.BN(94000);
     let ORDER_SIZE_IN_BASE_LOTS = new anchor.BN(100);
@@ -36,7 +36,7 @@ export const handler = async() => {
       mode: {
         arithmetic: {}
       },
-      numGrids: NUM_GRIDS,
+      numOrders: NUM_ORDERS,
       minPriceInTicks: MIN_PRICE_IN_TICKS,
       maxPriceInTicks: MAX_PRICE_IN_TICKS,
       orderSizeInBaseLots: ORDER_SIZE_IN_BASE_LOTS,
@@ -48,7 +48,7 @@ export const handler = async() => {
       try {
         let tx = await rootSdk.createPosition({
           provider,
-          spotGridMarketAddress: SPOT_GRID_MARKET_ADDRESS,
+          botMarketAddress: BOT_MARKET_ADDRESS,
           baseTokenUserAc,
           quoteTokenUserAc,
           positionArgs: args
@@ -60,17 +60,17 @@ export const handler = async() => {
         });
         await result.confirm();
 
-        console.log("New spot grid position");
+        console.log("New Bot position");
         console.log("Owner: ", provider.wallet.publicKey);
         console.log("Position address: ", tx.positionAddress);
         console.log("Position key: ", tx.positionKey);
-        console.log("Spot Grid market address: ", SPOT_GRID_MARKET_ADDRESS);
+        console.log("Bot market address: ", BOT_MARKET_ADDRESS);
         console.log("Trade manager address: ", tx.tradeManagerAddress);
         console.log("Seat: ", tx.seat);
         
         console.log("Parameters");
         console.log(`Mode: ${args.mode}`);
-        console.log(`Number of grids: ${args.numGrids.toNumber()}`);
+        console.log(`Number of orders: ${args.numOrders.toNumber()}`);
         console.log(`Minimum price in ticks: ${args.minPriceInTicks.toString()}`);
         console.log(`Maximum price in ticks: ${args.maxPriceInTicks.toString()}`);
         console.log(`Order size in base lots: ${args.orderSizeInBaseLots.toString()}`);
@@ -83,17 +83,17 @@ export const handler = async() => {
           "owner": provider.wallet.publicKey,
           "position_address": tx.positionAddress,
           "position_key": tx.positionKey,
-          "spot_grid_market_address": SPOT_GRID_MARKET_ADDRESS,
+          "bot_market_address": BOT_MARKET_ADDRESS,
           "trade_manager_address": tx.tradeManagerAddress,
           "seat": tx.seat,
           "mode": "Arithmetic",
-          "num_grids": NUM_GRIDS,
+          "num_orders": NUM_ORDERS,
           "min_price_in_ticks": MIN_PRICE_IN_TICKS,
           "max_price_in_ticks": MAX_PRICE_IN_TICKS,
           "order_size_in_base_lots": ORDER_SIZE_IN_BASE_LOTS,
         }
     
-        const allMarkets = await axios.post(URL + `position/add-position`, data);
+        const allMarkets = await axios.post(URL + `bot/position/add-position`, data);
         console.log("Response: ", allMarkets);
         return true;
       }

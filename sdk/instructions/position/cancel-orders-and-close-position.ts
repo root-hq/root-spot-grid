@@ -6,7 +6,7 @@ import { PHOENIX_SEAT_MANAGER_PROGRAM_ID } from "../../constants";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 export interface CancelOrdersAndClosePositionArgs extends WriteActionArgs {
-    spotGridMarketAddress: anchor.web3.PublicKey;
+    botMarketAddress: anchor.web3.PublicKey;
     positionAddress: anchor.web3.PublicKey;
     baseTokenUserAc: anchor.web3.PublicKey;
     quoteTokenUserAc: anchor.web3.PublicKey;
@@ -18,14 +18,14 @@ export interface CancelOrdersAndClosePositionResult extends WriteActionResult {
 
 export const cancelOrdersAndClosePosition = async({
     provider,
-    spotGridMarketAddress,
+    botMarketAddress,
     positionAddress,
     baseTokenUserAc,
     quoteTokenUserAc,
 }: CancelOrdersAndClosePositionArgs): Promise<CancelOrdersAndClosePositionResult> => {
     let rootProgram = getRootProgram(provider);
 
-    const market = await rootProgram.account.market.fetch(spotGridMarketAddress) as Market;
+    const market = await rootProgram.account.market.fetch(botMarketAddress) as Market;
     const position = await rootProgram.account.position.fetch(positionAddress) as Position;
     console.log("Position key: ", position.positionKey.toString());
 
@@ -63,7 +63,7 @@ export const cancelOrdersAndClosePosition = async({
             .methods
             .cancelOrders()
             .accounts({
-                creator: provider.wallet.publicKey,
+                owner: provider.wallet.publicKey,
                 phoenixMarket,
                 positionKey: position.positionKey,
                 logAuthority,
@@ -85,14 +85,14 @@ export const cancelOrdersAndClosePosition = async({
             .methods
             .closePosition()
             .accounts({
-                creator: provider.wallet.publicKey,
+                owner: provider.wallet.publicKey,
                 phoenixMarket,
                 positionKey: position.positionKey,
                 protocolFeeRecipient: market.protocolFeeRecipient,
                 tradeManager,
                 baseTokenMint,
                 quoteTokenMint,
-                spotGridMarket: spotGridMarketAddress,
+                botMarket: botMarketAddress,
                 position: positionAddress,
                 baseTokenUserAc,
                 quoteTokenUserAc,

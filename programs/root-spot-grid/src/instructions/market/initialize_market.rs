@@ -13,7 +13,7 @@ pub fn initialize_market(
     **ctx.accounts.market = Market {
         bump: *ctx.bumps.get("market").unwrap(),
         phoenix_market: ctx.accounts.phoenix_market.key(),
-        spot_grid_market_key: ctx.accounts.spot_grid_market_key.key(),
+        bot_market_key: ctx.accounts.bot_market_key.key(),
         owner: ctx.accounts.owner.key(),
         protocol_fee_recipient: ctx.accounts.protocol_fee_recipient.key(),
         base_token_mint: ctx.accounts.base_token_mint.key(),
@@ -38,14 +38,14 @@ pub struct InitializeMarket<'info> {
     pub protocol_fee_recipient: UncheckedAccount<'info>,
 
     /// CHECK: No constraint needed
-    pub spot_grid_market_key: UncheckedAccount<'info>,
+    pub bot_market_key: UncheckedAccount<'info>,
 
     #[account(
         init,
         seeds = [
             MARKET_SEED.as_bytes(),
             phoenix_market.key().as_ref(),
-            spot_grid_market_key.key().as_ref()
+            bot_market_key.key().as_ref()
         ],
         bump,
         space = Market::LEN,
