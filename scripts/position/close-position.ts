@@ -22,7 +22,7 @@ export const handler = async() => {
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
     const SPOT_GRID_MARKET_ADDRESS = new anchor.web3.PublicKey("2Fr54uBXzNVMJeGzSEhY85gR58L9rEXkhSqPiy8q5Vr1");
-    const POSITION_ADDRESS = new anchor.web3.PublicKey("gedXRBJtwjqxmdzhe7judZejVrFZHSzAoD33rhoYAD1");
+    const POSITION_ADDRESS = new anchor.web3.PublicKey("JCpgQoVVibTb7JZKeRMyYxhcGnBYRkZZjFC2amZGECP1");
 
     let baseTokenUserAc = await getAssociatedTokenAddress(rootSdk.WRAPPED_SOL_MAINNET, provider.wallet.publicKey);
     let quoteTokenUserAc = await getAssociatedTokenAddress(rootSdk.USDC_MAINNET, provider.wallet.publicKey);

@@ -22,15 +22,15 @@ export const handler = async() => {
 
     const provider = new anchor.AnchorProvider(connection, wallet, {});
 
-    const PHOENIX_MARKET_KEY = new anchor.web3.PublicKey("3J9LfemPBLowAJgpG3YdYPB9n6pUk7HEjwgS6Y5ToSFg");
+    const PHOENIX_MARKET_KEY = new anchor.web3.PublicKey("4DoNfFBfF7UokCC2FQzriy7yHK6DY6NVdYpuekQ5pRgg");
     const PROTOCOL_FEE_RECIPIENT = new anchor.web3.PublicKey("6HyM2raEk78s8PdiRKqSF36YtSZf3CjwmReTCtdaucuf");
 
     const BASE_TOKEN_MINT = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
-    const QUOTE_TOKEN_MINT = new anchor.web3.PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
+    const QUOTE_TOKEN_MINT = new anchor.web3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
-    const withdrawalFeeInBpsHundredths = new anchor.BN(5000);
-    const minOrderSizeInBaseLots = new anchor.BN(100);
-    const minOrderSpacingInTicks = new anchor.BN(10);
+    const withdrawalFeeInBpsHundredths = new anchor.BN(5_000);
+    const minOrderSizeInBaseLots = new anchor.BN(250);
+    const minOrderSpacingInTicks = new anchor.BN(100);
 
     const phoenixClient = await Client.create(connection);
     await phoenixClient.addMarket(PHOENIX_MARKET_KEY.toString());
@@ -77,7 +77,7 @@ export const handler = async() => {
             "min_order_size_in_base_lots": minOrderSpacingInTicks.toString(),
         }
     
-        const allMarkets = await axios.post(URL + `market/add-market`, data);
+        const allMarkets = await axios.post(URL + `bot/market/add-market`, data);
         console.log("Response: ", allMarkets);
         return true;
 }
