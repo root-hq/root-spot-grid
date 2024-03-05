@@ -1,0 +1,16 @@
+.anchor
+.env
+.prettierignore
+Anchor.toml
+Cargo.lock
+Cargo.toml
+migrations
+output
+test-ledger
+**/*.log
+tsconfig.json
+programs
+scripts
+app
+tests
+target
