@@ -49,8 +49,8 @@ export const closePosition = async({
     
     const transaction = new anchor.web3.Transaction();
 
-    const additionalUnitsIx = requestComputeUnits(1_400_000, 1);
-    transaction.add(...additionalUnitsIx);
+    // const additionalUnitsIx = requestComputeUnits(1_400_000, 1);
+    // transaction.add(...additionalUnitsIx);
 
     try {
         const ix = await rootProgram
