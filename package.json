@@ -2,13 +2,13 @@
     "name": "@squarerootlabs/root-spot-grid-ts",
     "description": "This SDK provides spot grid trading strategies on Phoenix v1 order book",
     "main": "dist/index.js",
-    "types": "dist/index.d.ts",  
+    "types": "dist/index.d.ts",
     "scripts": {
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
         "format": "cargo fmt --all && cargo clippy && prettier '.' --write",
         "build": "tsc -p .",
-        "publish": "npm version patch --no-git-tag-version && npm publish --access public"    
+        "publish": "npm version patch --no-git-tag-version && npm publish --access public"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.26.0",
@@ -28,5 +28,5 @@
         "ts-mocha": "^10.0.0",
         "typescript": "^4.3.5"
     },
-    "version": "0.0.1"
+    "version": "0.0.5"
 }
