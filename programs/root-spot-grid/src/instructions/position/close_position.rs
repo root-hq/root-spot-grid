@@ -36,6 +36,9 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
     let base_fee_amount = total_base_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
     let quote_fee_amount = total_quote_amount.checked_mul(fee_bps_hundredths).unwrap().checked_div(MAX_BASIS_POINTS_HUNDREDTHS).unwrap();
 
+    let base_withdrawable_amount = total_base_amount.checked_sub(base_fee_amount).unwrap();
+    let quote_withdrawable_amount = total_quote_amount.checked_sub(quote_fee_amount).unwrap();
+
     // Transfer withdrawal fee
     anchor_spl::token::transfer(
         CpiContext::new_with_signer(
@@ -74,7 +77,7 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
             },
             trade_manager_signer_seeds,
         ),
-        total_base_amount.checked_sub(base_fee_amount).unwrap(),
+        base_withdrawable_amount
     )?;
 
     anchor_spl::token::transfer(
@@ -87,7 +90,7 @@ pub fn close_position(ctx: Context<ClosePosition>) -> Result<()> {
             },
             trade_manager_signer_seeds,
         ),
-        total_quote_amount.checked_sub(quote_fee_amount).unwrap(),
+        quote_withdrawable_amount
     )?;
 
     let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(

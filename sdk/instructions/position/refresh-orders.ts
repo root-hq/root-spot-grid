@@ -58,7 +58,6 @@ export const refreshOrders = async({
             .methods
             .refreshOrders()
             .accounts({
-                cranker: provider.wallet.publicKey,
                 phoenixMarket,
                 botMarket: position.botMarket,
                 positionKey: position.positionKey,

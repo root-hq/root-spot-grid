@@ -400,9 +400,6 @@ pub fn refresh_orders(ctx: Context<RefreshOrders>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct RefreshOrders<'info> {
-    /// CHECK: No constraint needed
-    pub cranker: UncheckedAccount<'info>,
-
     #[account(mut)]
     /// CHECK: No constraint needed
     pub phoenix_market: UncheckedAccount<'info>,

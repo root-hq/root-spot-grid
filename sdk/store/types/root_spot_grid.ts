@@ -395,11 +395,6 @@ export type RootSpotGrid = {
       "name": "refreshOrders",
       "accounts": [
         {
-          "name": "cranker",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "phoenixMarket",
           "isMut": true,
           "isSigner": false
@@ -1142,11 +1137,6 @@ export const IDL: RootSpotGrid = {
     {
       "name": "refreshOrders",
       "accounts": [
-        {
-          "name": "cranker",
-          "isMut": false,
-          "isSigner": false
-        },
         {
           "name": "phoenixMarket",
           "isMut": true,
